@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Contact & Book Appointment | Dr Sonal Shah Cosmetica India | Dombivli</title>
+  <meta name="description" content="Book your appointment at Dr Sonal Shah Cosmetica India, Dombivli. Call or WhatsApp +91 98704 39934. Gurumandir Road, Dombivli East, Thane.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header" id="header">
+    <div class="header-inner">
+      <input type="checkbox" id="menu-toggle-cb" class="menu-toggle-cb" aria-hidden="true" tabindex="-1">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Dr Sonal Shah | Cosmetica India" class="logo-img">
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html" class="nav-link--current">Appointment</a></li>
+          <li class="nav-more-wrap">
+            <button type="button" class="nav-more-btn" aria-expanded="false" aria-controls="nav-more-menu">More</button>
+            <ul class="nav-more-menu" id="nav-more-menu">
+              <li><a href="transformations.html">Transformations</a></li>
+              <li><a href="reviews.html">Reviews</a></li>
+              <li><a href="services.html">Services</a></li>
+            </ul>
+          </li>
+          <li class="nav-item-desk"><a href="transformations.html">Transformations</a></li>
+          <li class="nav-item-desk"><a href="reviews.html">Reviews</a></li>
+          <li class="nav-item-desk"><a href="services.html">Services</a></li>
+        </ul>
+      </nav>
+      <a href="contact.html#booking" class="btn btn-primary header-cta">Book now</a>
+      <label for="menu-toggle-cb" class="menu-toggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <div class="container">
+        <h1 class="page-hero-title">Contact & Book Appointment</h1>
+        <p class="page-hero-subtitle">Fill in your details or reach us by phone and WhatsApp. We'll confirm your appointment shortly.</p>
+      </div>
+    </section>
+
+    <section class="appointment-cta reveal" id="booking">
+      <div class="container">
+        <div class="appointment-cta-inner">
+          <h2 class="section-title">Book Your Consultation with Ease</h2>
+          <p class="appointment-cta-text">Fill in your details and Dr Sonal Shah Cosmetica India will confirm your appointment shortly.</p>
+          <form class="booking-form" action="https://formspree.io/f/xvzqwprn" method="POST" aria-label="Book appointment">
+            <input type="hidden" name="_subject" value="New Appointment Request – Dr Sonal Shah Cosmetica India">
+            <div class="form-row">
+              <label for="booking-name">Name <span aria-hidden="true">*</span></label>
+              <input type="text" id="booking-name" name="name" required placeholder="Your name" autocomplete="name">
+            </div>
+            <div class="form-row">
+              <label for="booking-phone">Phone <span aria-hidden="true">*</span></label>
+              <input type="tel" id="booking-phone" name="phone" required placeholder="e.g. 98704 39934" autocomplete="tel">
+            </div>
+            <div class="form-row">
+              <label for="booking-email">Email</label>
+              <input type="email" id="booking-email" name="email" placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="form-row form-row-half">
+              <label for="booking-date">Preferred date</label>
+              <input type="date" id="booking-date" name="preferred_date" min="">
+            </div>
+            <div class="form-row form-row-half">
+              <label for="booking-time">Preferred time</label>
+              <select id="booking-time" name="preferred_time" aria-label="Preferred time">
+                <option value="">Select</option>
+                <option value="10:00-11:00">10:00 – 11:00 AM</option>
+                <option value="11:00-12:00">11:00 – 12:00 PM</option>
+                <option value="12:00-01:00">12:00 – 1:00 PM</option>
+                <option value="01:00-02:00">1:00 – 2:00 PM</option>
+                <option value="06:00-07:00">6:00 – 7:00 PM</option>
+                <option value="07:00-08:00">7:00 – 8:00 PM</option>
+                <option value="08:00-09:00">8:00 – 9:00 PM</option>
+                <option value="09:00-09:30">9:00 – 9:30 PM</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="booking-service">Service / concern</label>
+              <select id="booking-service" name="service" aria-label="Service or concern">
+                <option value="">Select (optional)</option>
+                <option value="Skin – Acne/Scars">Skin – Acne / Acne Scars</option>
+                <option value="Skin – Laser Tattoo Removal">Skin – Laser Tattoo Removal</option>
+                <option value="Skin – Electrocautery">Skin – Electrocautery</option>
+                <option value="Skin – Laser Carbon Facial">Skin – Laser Carbon Facial</option>
+                <option value="Hair – Laser Reduction">Hair – Laser Hair Reduction</option>
+                <option value="Hair – PRP">Hair – PRP</option>
+                <option value="Hair – Transplant">Hair – Transplant</option>
+                <option value="General consultation">General consultation</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="booking-message">Message</label>
+              <textarea id="booking-message" name="message" rows="3" placeholder="Any specific concern or note (optional)" aria-label="Message"></textarea>
+            </div>
+            <div class="form-status" id="form-status" aria-live="polite"></div>
+            <button type="submit" class="btn btn-primary btn-large btn-submit" id="booking-submit">Request Appointment</button>
+          </form>
+          <p class="form-or">— or book instantly via —</p>
+          <a href="https://wa.me/919870439934?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment%20at%20Dr%20Sonal%20Shah%20Cosmetica%20India." class="btn btn-whatsapp btn-large" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <img src="assets/logo.png" alt="Dr Sonal Shah | Cosmetica India" class="logo-img logo-img--footer">
+        </a>
+        <p class="footer-tagline">Skin Care | Hair Care | General Health | Homeopathy — Dr. Sonal R. Shah (BHMS), 26 years</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Appointment</a>
+        <a href="transformations.html">Transformations</a>
+        <a href="reviews.html">Reviews</a>
+        <a href="services.html">Services</a>
+      </div>
+      <div class="footer-contact">
+        <p><a href="tel:+919870439934">+91 98704 39934</a></p>
+        <p><a href="https://wa.me/919870439934" target="_blank" rel="noopener">WhatsApp</a></p>
+        <p><a href="https://www.google.com/maps/search/?api=1&query=Dr.+Sonal+Shah+Clinic+Cosmetica+India,+Guru+Mandir+Rd,+Saraswat+Colony,+Dombivli+East,+Dombivli,+Maharashtra+421201" target="_blank" rel="noopener">Dr. Sonal Shah Clinic Cosmetica India, Guru Mandir Rd, Saraswat Colony, Dombivli East, Dombivli, Maharashtra 421201</a></p>
+        <p>Morning: 10:00 AM – 2:00 PM | Evening: 6:00 PM – 9:30 PM</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© Dr Sonal Shah Cosmetica India. Skin & hair care by Dr. Sonal R. Shah.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

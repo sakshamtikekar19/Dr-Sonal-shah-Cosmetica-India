@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Reviews | Dr Sonal Shah Cosmetica India | Dr. Sonal R. Shah | Dombivli</title>
+  <meta name="description" content="Read patient reviews for Dr Sonal Shah Cosmetica India. Leave your review on Google or share your experience. Skin & hair care by Dr. Sonal R. Shah, Dombivli.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header" id="header">
+    <div class="header-inner">
+      <input type="checkbox" id="menu-toggle-cb" class="menu-toggle-cb" aria-hidden="true" tabindex="-1">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Dr Sonal Shah | Cosmetica India" class="logo-img">
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <ul class="nav-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Appointment</a></li>
+          <li class="nav-more-wrap">
+            <button type="button" class="nav-more-btn" aria-expanded="false" aria-controls="nav-more-menu">More</button>
+            <ul class="nav-more-menu" id="nav-more-menu">
+              <li><a href="transformations.html">Transformations</a></li>
+              <li><a href="reviews.html">Reviews</a></li>
+              <li><a href="services.html">Services</a></li>
+            </ul>
+          </li>
+          <li class="nav-item-desk"><a href="transformations.html">Transformations</a></li>
+          <li class="nav-item-desk"><a href="reviews.html" class="nav-link--current">Reviews</a></li>
+          <li class="nav-item-desk"><a href="services.html">Services</a></li>
+        </ul>
+      </nav>
+      <a href="contact.html" class="btn btn-primary header-cta">Book now</a>
+      <label for="menu-toggle-cb" class="menu-toggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <div class="container">
+        <h1 class="page-hero-title">Reviews</h1>
+        <p class="page-hero-subtitle">What our patients say — and share your experience with us</p>
+      </div>
+    </section>
+
+    <!-- Leave a review -->
+    <section class="reviews-leave reveal" id="leave-review">
+      <div class="container">
+        <h2 class="section-title section-title-center">Leave a Review</h2>
+        <p class="section-subtitle">Your feedback helps others and helps us improve. Thank you!</p>
+        <div class="reviews-leave-inner">
+          <!-- Direct link to Google Business Profile for Dr. Sonal Shah Clinic Cosmetica India -->
+          <a href="https://www.google.com/maps/search/?api=1&query=Dr.+Sonal+Shah+Clinic+Cosmetica+India+Dombivli+East" id="google-review-link" class="btn btn-primary btn-large reviews-google-btn" target="_blank" rel="noopener">Write a review on Google</a>
+          <p class="reviews-or">— or share your experience below (we may feature it on our website) —</p>
+          <form class="review-form" action="https://formspree.io/f/xvzqwprn" method="POST" aria-label="Submit review">
+            <input type="hidden" name="_subject" value="New Review – Dr Sonal Shah Cosmetica India">
+            <div class="form-row">
+              <label for="review-name">Your name <span aria-hidden="true">*</span></label>
+              <input type="text" id="review-name" name="name" required placeholder="Your name" autocomplete="name">
+            </div>
+            <div class="form-row">
+              <label for="review-rating">Rating <span aria-hidden="true">*</span></label>
+              <select id="review-rating" name="rating" required aria-label="Star rating">
+                <option value="">Select rating</option>
+                <option value="5">★★★★★ Excellent</option>
+                <option value="4">★★★★ Very good</option>
+                <option value="3">★★★ Good</option>
+                <option value="2">★★ Fair</option>
+                <option value="1">★ Poor</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="review-text">Your review <span aria-hidden="true">*</span></label>
+              <textarea id="review-text" name="review" rows="4" required placeholder="Share your experience with Dr. Shah and Dr Sonal Shah Cosmetica India..." aria-label="Your review"></textarea>
+            </div>
+            <div class="form-status" id="review-form-status" aria-live="polite"></div>
+            <button type="submit" class="btn btn-primary btn-large btn-submit" id="review-submit">Submit review</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Display reviews (from Google + featured) -->
+    <section class="reviews-display reveal">
+      <div class="container">
+        <h2 class="section-title section-title-center">What Patients Say</h2>
+        <p class="section-subtitle">A selection of our Google reviews and patient feedback</p>
+        <div class="reviews-grid">
+          <blockquote class="review-card">
+            <div class="review-stars" aria-hidden="true">★★★★★</div>
+            <p class="review-text">Dr. Shah understood my skin concerns and suggested a treatment that actually worked. Professional and caring. Best dermatologist in Dombivli.</p>
+            <footer class="review-footer">— Patient · Google</footer>
+          </blockquote>
+          <blockquote class="review-card">
+            <div class="review-stars" aria-hidden="true">★★★★★</div>
+            <p class="review-text">Best dermatologist near you for acne and hair issues. The clinic is clean and the staff is very helpful. Highly recommend!</p>
+            <footer class="review-footer">— Patient · Google</footer>
+          </blockquote>
+          <blockquote class="review-card">
+            <div class="review-stars" aria-hidden="true">★★★★★</div>
+            <p class="review-text">I had a great experience with PRP for hair. Results are visible and I feel more confident. Dr. Sonal Shah is very knowledgeable and patient.</p>
+            <footer class="review-footer">— Patient · Google</footer>
+          </blockquote>
+          <blockquote class="review-card">
+            <div class="review-stars" aria-hidden="true">★★★★★</div>
+            <p class="review-text">Excellent skin and hair care. Dr. Shah takes time to explain everything. The clinic is well maintained. Very satisfied with my treatment.</p>
+            <footer class="review-footer">— Patient · Google</footer>
+          </blockquote>
+          <blockquote class="review-card">
+            <div class="review-stars" aria-hidden="true">★★★★★</div>
+            <p class="review-text">Came for acne treatment. Dr. Shah gave a proper diagnosis and the treatment plan worked. Staff is courteous. Thank you Dr Sonal Shah Cosmetica India!</p>
+            <footer class="review-footer">— Patient · Google</footer>
+          </blockquote>
+          <blockquote class="review-card">
+            <div class="review-stars" aria-hidden="true">★★★★★</div>
+            <p class="review-text">Trustworthy and ethical practice. No unnecessary procedures. Dr. Sonal Shah focuses on root cause. Would recommend to everyone.</p>
+            <footer class="review-footer">— Patient · Google</footer>
+          </blockquote>
+        </div>
+        <p class="reviews-cta-wrap">
+          <a href="https://www.google.com/maps/search/?api=1&query=Dr.+Sonal+Shah+Clinic+Cosmetica+India+Dombivli+East" class="btn btn-primary" target="_blank" rel="noopener">See all reviews on Google</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <img src="assets/logo.png" alt="Dr Sonal Shah | Cosmetica India" class="logo-img logo-img--footer">
+        </a>
+        <p class="footer-tagline">Skin Care | Hair Care | General Health | Homeopathy — Dr. Sonal R. Shah (BHMS), 26 years</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Appointment</a>
+        <a href="transformations.html">Transformations</a>
+        <a href="reviews.html">Reviews</a>
+        <a href="services.html">Services</a>
+      </div>
+      <div class="footer-contact">
+        <p><a href="tel:+919870439934">+91 98704 39934</a></p>
+        <p><a href="https://wa.me/919870439934" target="_blank" rel="noopener">WhatsApp</a></p>
+        <p><a href="https://www.google.com/maps/search/?api=1&query=Dr.+Sonal+Shah+Clinic+Cosmetica+India,+Guru+Mandir+Rd,+Saraswat+Colony,+Dombivli+East,+Dombivli,+Maharashtra+421201" target="_blank" rel="noopener">Dr. Sonal Shah Clinic Cosmetica India, Guru Mandir Rd, Saraswat Colony, Dombivli East, Dombivli, Maharashtra 421201</a></p>
+        <p>Morning: 10:00 AM – 2:00 PM | Evening: 6:00 PM – 9:30 PM</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© Dr Sonal Shah Cosmetica India. Skin & hair care by Dr. Sonal R. Shah.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+  (function() {
+    var form = document.querySelector('.review-form');
+    var status = document.getElementById('review-form-status');
+    var submitBtn = document.getElementById('review-submit');
+    if (form && status && submitBtn) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        status.textContent = '';
+        status.className = 'form-status';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+        var formData = new FormData(form);
+        fetch(form.action, { method: 'POST', body: formData, headers: { Accept: 'application/json' } })
+          .then(function(res) {
+            if (res.ok) {
+              status.className = 'form-status form-status--success';
+              status.textContent = 'Thank you! Your review has been sent. We may feature it on our website.';
+              form.reset();
+            } else {
+              status.className = 'form-status form-status--error';
+              status.textContent = 'Could not send. Please try "Write a review on Google" above.';
+            }
+          })
+          .catch(function() {
+            status.className = 'form-status form-status--error';
+            status.textContent = 'Could not send. Please try "Write a review on Google" above.';
+          })
+          .finally(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit review';
+          });
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
