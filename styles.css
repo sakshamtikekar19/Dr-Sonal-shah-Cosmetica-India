@@ -1179,6 +1179,37 @@ main {
 }
 
 /* Appointment CTA */
+/* AI Voice Booking */
+.ai-voice-booking {
+  padding: 2.5rem 0;
+  background: var(--bg-section);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.section-subtitle--voice {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.ai-voice-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.ai-voice-desc {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0 0 1rem;
+}
+.ai-voice-fallback {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0;
+}
+.ai-voice-fallback a {
+  font-weight: 600;
+  color: var(--teal);
+}
+
 .appointment-cta {
   padding: 1.5rem 0 4rem 0;
   background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);

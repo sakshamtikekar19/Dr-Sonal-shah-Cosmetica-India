@@ -50,6 +50,18 @@
       </div>
     </section>
 
+    <!-- AI Voice Booking -->
+    <section class="ai-voice-booking reveal" id="ai-voice">
+      <div class="container">
+        <h2 class="section-title section-title-center">Book by Voice</h2>
+        <p class="section-subtitle section-subtitle--voice">Talk to our AI assistant to book your appointment — no form needed</p>
+        <div class="ai-voice-inner">
+          <p class="ai-voice-desc">Click the microphone button (bottom right) to start a voice call with our AI booking agent. Say your name, preferred date & time, and service — we’ll confirm your appointment shortly.</p>
+          <p class="ai-voice-fallback">Prefer to call? <a href="tel:+919870439934">+91 98704 39934</a></p>
+        </div>
+      </div>
+    </section>
+
     <section class="appointment-cta reveal" id="booking">
       <div class="container">
         <div class="appointment-cta-inner">
@@ -142,6 +154,37 @@
       <p>© Dr Sonal Shah Cosmetica India. Skin & hair care by Dr. Sonal R. Shah.</p>
     </div>
   </footer>
+
+  <!-- AI Voice widget (Vapi): Get your public key and assistant ID from https://dashboard.vapi.ai — then replace below and create an assistant that collects name, date, time, service for booking -->
+  <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
+  <vapi-widget
+    id="vapi-booking-widget"
+    public-key="2BsEFcU7jUhLaUwV4h7l\"
+    assistant-id="835a2ae1-5396-46b9-8b29-1270d3959019"
+    mode="voice"
+    size="compact"
+    theme="light"
+    position="bottom-right"
+    main-label="Book with AI"
+    start-button-text="Start call"
+    end-button-text="End call"
+    empty-voice-message="Click to book your appointment by voice"
+    accent-color="#0d9488"
+    button-base-color="#0d9488"
+    button-accent-color="#ffffff"
+  ></vapi-widget>
+  <script>
+    (function() {
+      setTimeout(function() {
+        var w = document.getElementById('vapi-booking-widget');
+        var pk = (w && w.getAttribute('public-key')) || '';
+        var aid = (w && w.getAttribute('assistant-id')) || '';
+        if (w && (pk === '' || pk.indexOf('YOUR_') === 0 || aid === '' || aid.indexOf('YOUR_') === 0)) {
+          w.style.display = 'none';
+        }
+      }, 500);
+    })();
+  </script>
 
   <script src="script.js"></script>
 </body>
