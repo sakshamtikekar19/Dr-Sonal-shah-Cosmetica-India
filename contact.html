@@ -22,14 +22,6 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="contact.html" class="nav-link--current">Appointment</a></li>
-          <li class="nav-more-wrap">
-            <button type="button" class="nav-more-btn" aria-expanded="false" aria-controls="nav-more-menu">More</button>
-            <ul class="nav-more-menu" id="nav-more-menu">
-              <li><a href="transformations.html">Transformations</a></li>
-              <li><a href="reviews.html">Reviews</a></li>
-              <li><a href="services.html">Services</a></li>
-            </ul>
-          </li>
           <li class="nav-item-desk"><a href="transformations.html">Transformations</a></li>
           <li class="nav-item-desk"><a href="reviews.html">Reviews</a></li>
           <li class="nav-item-desk"><a href="services.html">Services</a></li>
@@ -50,18 +42,6 @@
       </div>
     </section>
 
-    <!-- AI Voice Booking -->
-    <section class="ai-voice-booking reveal" id="ai-voice">
-      <div class="container">
-        <h2 class="section-title section-title-center">Book by Voice</h2>
-        <p class="section-subtitle section-subtitle--voice">Talk to our AI assistant to book your appointment — no form needed</p>
-        <div class="ai-voice-inner">
-          <p class="ai-voice-desc">Click the microphone button (bottom right) to start a voice call with our AI booking agent. Say your name, preferred date & time, and service — we’ll confirm your appointment shortly.</p>
-          <p class="ai-voice-fallback">Prefer to call? <a href="tel:+919870439934">+91 98704 39934</a></p>
-        </div>
-      </div>
-    </section>
-
     <section class="appointment-cta reveal" id="booking">
       <div class="container">
         <div class="appointment-cta-inner">
@@ -74,43 +54,59 @@
               <input type="text" id="booking-name" name="name" required placeholder="Your name" autocomplete="name">
             </div>
             <div class="form-row">
-              <label for="booking-phone">Phone <span aria-hidden="true">*</span></label>
-              <input type="tel" id="booking-phone" name="phone" required placeholder="e.g. 98704 39934" autocomplete="tel">
+              <label for="booking-phone">WhatsApp number <span aria-hidden="true">*</span></label>
+              <input type="tel" id="booking-phone" name="phone" required placeholder="e.g. 98704 39934" autocomplete="tel" aria-label="WhatsApp number">
             </div>
             <div class="form-row">
               <label for="booking-email">Email</label>
               <input type="email" id="booking-email" name="email" placeholder="your@email.com" autocomplete="email">
             </div>
-            <div class="form-row form-row-half">
-              <label for="booking-date">Preferred date</label>
-              <input type="date" id="booking-date" name="preferred_date" min="">
-            </div>
-            <div class="form-row form-row-half">
-              <label for="booking-time">Preferred time</label>
-              <select id="booking-time" name="preferred_time" aria-label="Preferred time">
-                <option value="">Select</option>
-                <option value="10:00-11:00">10:00 – 11:00 AM</option>
-                <option value="11:00-12:00">11:00 – 12:00 PM</option>
-                <option value="12:00-01:00">12:00 – 1:00 PM</option>
-                <option value="01:00-02:00">1:00 – 2:00 PM</option>
-                <option value="06:00-07:00">6:00 – 7:00 PM</option>
-                <option value="07:00-08:00">7:00 – 8:00 PM</option>
-                <option value="08:00-09:00">8:00 – 9:00 PM</option>
-                <option value="09:00-09:30">9:00 – 9:30 PM</option>
+            <div class="form-row">
+              <label for="booking-service">Treatment / service <span aria-hidden="true">*</span></label>
+              <select id="booking-service" name="service" required aria-label="Select treatment">
+                <option value="">— Select treatment —</option>
+                <optgroup label="Skin Care Treatments">
+                  <option value="Acne & Acne Scar Treatment">Acne & Acne Scar Treatment</option>
+                  <option value="Laser Tattoo Removal">Laser Tattoo Removal</option>
+                  <option value="Electrocautery (Moles, Warts, Skin Tags)">Electrocautery (Moles, Warts, Skin Tags)</option>
+                  <option value="Laser Carbon Facial">Laser Carbon Facial</option>
+                </optgroup>
+                <optgroup label="Hair Care Treatments">
+                  <option value="Laser Hair Reduction">Laser Hair Reduction</option>
+                  <option value="Platelet Rich Plasma (PRP)">Platelet Rich Plasma (PRP)</option>
+                  <option value="Hair Transplant">Hair Transplant</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="General consultation">General consultation</option>
+                </optgroup>
               </select>
             </div>
-            <div class="form-row">
-              <label for="booking-service">Service / concern</label>
-              <select id="booking-service" name="service" aria-label="Service or concern">
-                <option value="">Select (optional)</option>
-                <option value="Skin – Acne/Scars">Skin – Acne / Acne Scars</option>
-                <option value="Skin – Laser Tattoo Removal">Skin – Laser Tattoo Removal</option>
-                <option value="Skin – Electrocautery">Skin – Electrocautery</option>
-                <option value="Skin – Laser Carbon Facial">Skin – Laser Carbon Facial</option>
-                <option value="Hair – Laser Reduction">Hair – Laser Hair Reduction</option>
-                <option value="Hair – PRP">Hair – PRP</option>
-                <option value="Hair – Transplant">Hair – Transplant</option>
-                <option value="General consultation">General consultation</option>
+            <div class="form-row form-row-half">
+              <label for="booking-date">Preferred date <span aria-hidden="true">*</span></label>
+              <input type="date" id="booking-date" name="preferred_date" required min="">
+            </div>
+            <div class="form-row form-row-half">
+              <label for="booking-time">Preferred time slot (30 min) <span aria-hidden="true">*</span></label>
+              <select id="booking-time" name="preferred_time" required aria-label="Preferred time (30 min slots)">
+                <option value="">— Select time —</option>
+                <optgroup label="Morning (10:00 AM – 2:00 PM)">
+                  <option value="10:00-10:30">10:00 – 10:30 AM</option>
+                  <option value="10:30-11:00">10:30 – 11:00 AM</option>
+                  <option value="11:00-11:30">11:00 – 11:30 AM</option>
+                  <option value="11:30-12:00">11:30 – 12:00 PM</option>
+                  <option value="12:00-12:30">12:00 – 12:30 PM</option>
+                  <option value="12:30-01:00">12:30 – 1:00 PM</option>
+                  <option value="01:00-01:30">1:00 – 1:30 PM</option>
+                  <option value="01:30-02:00">1:30 – 2:00 PM</option>
+                </optgroup>
+                <optgroup label="Evening (6:00 PM – 9:00 PM)">
+                  <option value="06:00-06:30">6:00 – 6:30 PM</option>
+                  <option value="06:30-07:00">6:30 – 7:00 PM</option>
+                  <option value="07:00-07:30">7:00 – 7:30 PM</option>
+                  <option value="07:30-08:00">7:30 – 8:00 PM</option>
+                  <option value="08:00-08:30">8:00 – 8:30 PM</option>
+                  <option value="08:30-09:00">8:30 – 9:00 PM</option>
+                </optgroup>
               </select>
             </div>
             <div class="form-row">
@@ -129,63 +125,18 @@
 
   <footer class="footer">
     <div class="container footer-inner">
-      <div class="footer-brand">
-        <a href="index.html" class="logo">
-          <img src="assets/logo.png" alt="Dr Sonal Shah | Cosmetica India" class="logo-img logo-img--footer">
-        </a>
-        <p class="footer-tagline">Skin Care | Hair Care | General Health | Homeopathy — Dr. Sonal R. Shah (BHMS), 26 years</p>
-      </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Appointment</a>
-        <a href="transformations.html">Transformations</a>
-        <a href="reviews.html">Reviews</a>
-        <a href="services.html">Services</a>
-      </div>
       <div class="footer-contact">
-        <p><a href="tel:+919870439934">+91 98704 39934</a></p>
-        <p><a href="https://wa.me/919870439934" target="_blank" rel="noopener">WhatsApp</a></p>
+        <p><a href="tel:+919870439934">+91 98704 39934</a> | <a href="https://wa.me/919870439934" target="_blank" rel="noopener">WhatsApp</a></p>
         <p><a href="https://www.google.com/maps/search/?api=1&query=Dr.+Sonal+Shah+Clinic+Cosmetica+India,+Guru+Mandir+Rd,+Saraswat+Colony,+Dombivli+East,+Dombivli,+Maharashtra+421201" target="_blank" rel="noopener">Dr. Sonal Shah Clinic Cosmetica India, Guru Mandir Rd, Saraswat Colony, Dombivli East, Dombivli, Maharashtra 421201</a></p>
         <p>Morning: 10:00 AM – 2:00 PM | Evening: 6:00 PM – 9:30 PM</p>
+        <p>© Dr Sonal Shah Cosmetica India</p>
       </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© Dr Sonal Shah Cosmetica India. Skin & hair care by Dr. Sonal R. Shah.</p>
     </div>
   </footer>
 
-  <!-- AI Voice widget (Vapi): Get your public key and assistant ID from https://dashboard.vapi.ai — then replace below and create an assistant that collects name, date, time, service for booking -->
-  <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
-  <vapi-widget
-    id="vapi-booking-widget"
-    public-key="2BsEFcU7jUhLaUwV4h7l\"
-    assistant-id="835a2ae1-5396-46b9-8b29-1270d3959019"
-    mode="voice"
-    size="compact"
-    theme="light"
-    position="bottom-right"
-    main-label="Book with AI"
-    start-button-text="Start call"
-    end-button-text="End call"
-    empty-voice-message="Click to book your appointment by voice"
-    accent-color="#0d9488"
-    button-base-color="#0d9488"
-    button-accent-color="#ffffff"
-  ></vapi-widget>
-  <script>
-    (function() {
-      setTimeout(function() {
-        var w = document.getElementById('vapi-booking-widget');
-        var pk = (w && w.getAttribute('public-key')) || '';
-        var aid = (w && w.getAttribute('assistant-id')) || '';
-        if (w && (pk === '' || pk.indexOf('YOUR_') === 0 || aid === '' || aid.indexOf('YOUR_') === 0)) {
-          w.style.display = 'none';
-        }
-      }, 500);
-    })();
-  </script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="booking-config.js"></script>
   <script src="script.js"></script>
+  <script src="booking-slots.js"></script>
 </body>
 </html>

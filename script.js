@@ -15,8 +15,17 @@
   }
 
   var menuToggle = document.querySelector('.menu-toggle');
+  var menuCb = document.getElementById('menu-toggle-cb');
   var nav = document.querySelector('.nav');
   var navLinks = document.querySelectorAll('.nav-list a');
+  
+  // Ensure hamburger menu works on mobile
+  if (menuToggle && menuCb) {
+    menuToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      menuCb.checked = !menuCb.checked;
+    });
+  }
   var dots = document.querySelectorAll('.testimonials-dots .dot');
   var track = document.querySelector('.testimonials-track');
   var dateInput = document.getElementById('booking-date');
@@ -27,11 +36,14 @@
     dateInput.setAttribute('min', today);
   }
 
-  // Booking form — submit via AJAX to Formspree (sends to dr.shah.sonal.r@gmail.com)
+  // Booking form — submit via AJAX to Formspree (if slot booking not handled by booking-slots.js)
+  var bookingConfig = window.BOOKING_CONFIG;
+  var useSlotBooking = bookingConfig && bookingConfig.supabaseUrl && bookingConfig.supabaseAnonKey &&
+    bookingConfig.supabaseUrl.indexOf('YOUR_') !== 0 && bookingConfig.supabaseAnonKey.indexOf('YOUR_') !== 0;
   var bookingForm = document.querySelector('.booking-form');
   var formStatus = document.getElementById('form-status');
   var submitBtn = document.getElementById('booking-submit');
-  if (bookingForm && formStatus && submitBtn) {
+  if (bookingForm && formStatus && submitBtn && !useSlotBooking) {
     bookingForm.addEventListener('submit', function (e) {
       e.preventDefault();
       formStatus.textContent = '';
@@ -66,39 +78,45 @@
     });
   }
 
-  // Mobile menu — close when a nav link is clicked (checkbox hack does open/close)
+  // Mobile menu — close when a nav link is clicked (after navigation)
   var menuCb = document.getElementById('menu-toggle-cb');
   if (menuCb && navLinks.length) {
     navLinks.forEach(function (link) {
-      link.addEventListener('click', function () {
-        menuCb.checked = false;
+      link.addEventListener('click', function (e) {
+        // Let the link navigate normally - don't prevent default
+        // Close menu after navigation starts
+        var href = this.getAttribute('href');
+        if (href && href !== '#' && href !== 'javascript:void(0)') {
+          setTimeout(function() {
+            if (menuCb) menuCb.checked = false;
+          }, 400);
+        }
         var mw = document.querySelector('.nav-more-wrap');
         if (mw) mw.classList.remove('open');
-      });
+      }, false);
     });
   }
 
-  // Mobile "More" dropdown — single click handler for reliable tap
-  var moreBtn = document.querySelector('.nav-more-btn');
-  var moreWrap = document.querySelector('.nav-more-wrap');
-  if (moreBtn && moreWrap) {
-    var lastMoreTap = 0;
-    moreBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (Date.now() - lastMoreTap < 500) return;
-      lastMoreTap = Date.now();
-      moreWrap.classList.toggle('open');
-      moreBtn.setAttribute('aria-expanded', moreWrap.classList.contains('open'));
-    });
-
-    moreWrap.querySelectorAll('.nav-more-menu a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        moreWrap.classList.remove('open');
-        moreBtn.setAttribute('aria-expanded', 'false');
-        if (menuCb) menuCb.checked = false;
-      });
-    });
+  // Close mobile menu when clicking overlay (backdrop) - use mousedown for better response
+  if (menuCb && nav) {
+    // Use capture phase to handle overlay clicks before they reach links
+    document.addEventListener('mousedown', function(e) {
+      if (menuCb.checked) {
+        // If clicking outside nav (on overlay), close menu
+        if (!nav.contains(e.target) && !e.target.closest('.menu-toggle')) {
+          menuCb.checked = false;
+        }
+      }
+    }, true);
+    
+    // Also handle touch events for mobile
+    document.addEventListener('touchstart', function(e) {
+      if (menuCb.checked) {
+        if (!nav.contains(e.target) && !e.target.closest('.menu-toggle')) {
+          menuCb.checked = false;
+        }
+      }
+    }, true);
   }
 
   // Testimonial dots — scroll to card on click

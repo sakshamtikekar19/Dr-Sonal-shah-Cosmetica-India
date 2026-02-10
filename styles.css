@@ -29,6 +29,8 @@
   box-sizing: border-box;
 }
 
+/* Prevent horizontal scroll globally, allow vertical scroll - REMOVED DUPLICATE */
+
 /* Animations — respect reduced motion */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes fadeInUp {
@@ -81,10 +83,12 @@
   justify-content: center;
   background: var(--white);
   transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: none;
 }
 .splash.splash--hidden {
   opacity: 0;
   pointer-events: none;
+  touch-action: auto;
 }
 .splash-inner {
   display: flex;
@@ -159,21 +163,100 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  overflow-y: auto; /* Allow natural scrolling */
   width: 100%;
+  height: auto; /* Allow html to expand beyond viewport */
+  min-height: 100%; /* Ensure minimum viewport height */
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
+  scrollbar-width: none; /* Firefox - hide scrollbar */
+  -ms-overflow-style: none; /* IE and Edge - hide scrollbar */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome/Safari - hide scrollbar */
+  width: 0;
+  height: 0;
 }
 
 body {
   margin: 0;
   overflow-x: hidden;
+  overflow-y: auto; /* Allow natural scrolling */
   width: 100%;
   min-width: 0;
+  min-height: 100vh; /* Minimum viewport height */
+  height: auto; /* Allow body to expand naturally */
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.7; /* Increased line height for elegance */
   color: var(--text);
   background: var(--white);
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
+  position: relative;
+  overscroll-behavior-y: auto; /* Allow normal scroll behavior */
+  scrollbar-width: none; /* Firefox - hide scrollbar */
+  -ms-overflow-style: none; /* IE and Edge - hide scrollbar */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome/Safari - hide scrollbar */
+  width: 0;
+  height: 0;
+}
+
+/* Hide vertical scrollbars on containers/sections - prevent nested scrollbars */
+main::-webkit-scrollbar,
+section::-webkit-scrollbar,
+.container::-webkit-scrollbar,
+.transformations-section::-webkit-scrollbar,
+.transformations-grid::-webkit-scrollbar,
+.hero::-webkit-scrollbar,
+.about::-webkit-scrollbar,
+.services-preview::-webkit-scrollbar,
+.services-full::-webkit-scrollbar,
+.testimonials::-webkit-scrollbar,
+.why-choose::-webkit-scrollbar,
+.appointment-cta::-webkit-scrollbar,
+.clinic-info::-webkit-scrollbar,
+.footer::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+}
+
+main,
+section,
+.container,
+.transformations-section,
+.transformations-grid,
+.hero,
+.about,
+.services-preview,
+.services-full,
+.testimonials,
+.why-choose,
+.appointment-cta,
+.clinic-info,
+.footer {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Hide mobile menu scrollbar too - but keep scrolling functionality */
+.nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
+.nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Exception: testimonials-track needs horizontal scrollbar (hidden via existing CSS) */
+.testimonials-track::-webkit-scrollbar {
+  display: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -200,7 +283,12 @@ img {
 
 main {
   overflow-x: hidden;
+  overflow-y: visible;
   min-width: 0;
+  position: relative;
+  width: 100%;
+  min-height: auto;
+  height: auto;
 }
 
 .container {
@@ -212,6 +300,8 @@ main {
   padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
   box-sizing: border-box;
   min-width: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 /* Inner page hero (About, Services, Contact) */
@@ -220,6 +310,9 @@ main {
   padding: 2.5rem 0 2rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   transition: padding var(--transition);
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .page-hero-title {
@@ -265,6 +358,10 @@ main {
 .transformations-section {
   padding: 2.5rem 0 3rem;
   background: var(--bg);
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
+  min-height: auto;
 }
 .transformations-intro {
   margin: 0 auto 2rem;
@@ -281,6 +378,9 @@ main {
   gap: 2rem;
   margin-bottom: 2.5rem;
   align-items: start;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 .transformation-card {
   background: var(--white);
@@ -468,6 +568,7 @@ main {
   box-sizing: border-box;
   transition: box-shadow var(--transition);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Subtle border for dark header */
+  touch-action: pan-y;
 }
 
 .header.scrolled {
@@ -651,6 +752,20 @@ main {
   background: var(--white);
   border-radius: 1px;
   pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s;
+}
+
+/* Hamburger animation when menu is open */
+.menu-toggle-cb:checked ~ .menu-toggle span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.menu-toggle-cb:checked ~ .menu-toggle span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle-cb:checked ~ .menu-toggle span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
 }
 
 /* Hero */
@@ -658,7 +773,9 @@ main {
   position: relative;
   background: var(--bg);
   padding: 4rem 0 5rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .hero-bg-shape {
@@ -807,6 +924,9 @@ main {
 .about {
   background: var(--bg-section);
   padding: 4.5rem 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .about-inner {
@@ -899,6 +1019,9 @@ main {
 .services-preview {
   padding: 4.5rem 0 2rem 0;
   background: var(--white);
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .services-cards {
@@ -974,6 +1097,9 @@ main {
 .why-choose {
   background: var(--bg);
   padding: 2rem 0 1.5rem 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .why-choose-inner {
@@ -1048,6 +1174,9 @@ main {
 .services-full {
   padding: 4.5rem 0;
   background: var(--white);
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .services-full-grid {
@@ -1107,6 +1236,9 @@ main {
 .testimonials {
   background: var(--bg-section);
   padding: 4rem 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .testimonials-slider {
@@ -1179,41 +1311,13 @@ main {
 }
 
 /* Appointment CTA */
-/* AI Voice Booking */
-.ai-voice-booking {
-  padding: 2.5rem 0;
-  background: var(--bg-section);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-.section-subtitle--voice {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-.ai-voice-inner {
-  max-width: 560px;
-  margin: 0 auto;
-  text-align: center;
-}
-.ai-voice-desc {
-  font-size: 1rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin: 0 0 1rem;
-}
-.ai-voice-fallback {
-  font-size: 0.95rem;
-  color: var(--text);
-  margin: 0;
-}
-.ai-voice-fallback a {
-  font-weight: 600;
-  color: var(--teal);
-}
-
 .appointment-cta {
   padding: 1.5rem 0 4rem 0;
   background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
   color: var(--white);
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .appointment-cta-inner {
@@ -1494,6 +1598,9 @@ main {
   padding: 3rem 0;
   background: var(--white);
   border-top: 1px solid rgba(0, 0, 0, 0.06);
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .clinic-inner {
@@ -1533,14 +1640,19 @@ main {
 .footer {
   background: #1e293b;
   color: rgba(255, 255, 255, 0.85);
-  padding: 3rem 0 0;
+  padding: 1.5rem 0 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .footer-inner {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 2.5rem;
-  padding-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
   min-width: 0;
 }
 
@@ -1573,9 +1685,13 @@ main {
   color: var(--teal-light);
 }
 
+.footer-contact {
+  width: 100%;
+}
+
 .footer-contact p {
-  margin: 0 0 0.35rem;
-  font-size: 0.95rem;
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
   overflow-wrap: break-word;
 }
 
@@ -1667,37 +1783,93 @@ main {
   }
 
   .footer-inner {
-    grid-template-columns: 1fr;
-    text-align: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
   }
 
-  .footer-links {
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
 
-  /* Mobile: all tabs in header — tap goes to page, no hamburger */
+  /* Mobile: hamburger menu on right side */
   .header-inner {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+  }
+
+  .menu-toggle {
+    display: flex !important;
+    order: 3;
+    margin-left: auto;
+    z-index: 10001;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  .menu-toggle:hover {
+    opacity: 0.9;
+  }
+  
+  .menu-toggle:active {
+    opacity: 0.7;
+  }
+
+  .menu-toggle-cb {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    opacity: 0;
   }
 
   .nav {
-    flex: 1 1 100%;
-    order: 2;
-    display: block;
-    margin-top: 0.5rem;
-    padding: 0.5rem 0 0;
-    padding-left: env(safe-area-inset-left, 0);
-    padding-right: env(safe-area-inset-right, 0);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    overflow-x: visible;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    max-width: 85vw;
+    height: 100vh;
+    background: var(--header-bg);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+    padding: 4rem 1.5rem 2rem;
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), visibility 0.4s;
+    z-index: 10000;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    visibility: hidden;
+    pointer-events: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    will-change: transform;
+  }
+  
+  .nav::-webkit-scrollbar {
+    display: none;
+    width: 0;
   }
 
+  #menu-toggle-cb:checked ~ .nav {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+  
+  /* Ensure nav and its children are clickable when open */
+  #menu-toggle-cb:checked ~ .nav * {
+    pointer-events: auto;
+  }
+  
   .nav-list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -1705,50 +1877,76 @@ main {
   }
 
   .nav-list > li {
-    min-width: 0;
+    width: 100%;
+  }
+
+  .nav-list {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10001;
+  }
+  
+  .nav-list li {
+    pointer-events: auto !important;
   }
 
   .nav-list a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: 0.5rem 0.4rem;
-    font-size: 0.85rem;
+    display: block !important;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    white-space: nowrap;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    text-align: center;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: var(--radius);
+    text-align: left;
+    transition: background var(--transition), color var(--transition);
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 10002 !important;
+    text-decoration: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .nav-list a:active,
+  .nav-list a:focus {
+    background: rgba(255, 255, 255, 0.25);
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: -2px;
   }
 
-  /* Mobile nav: pill style instead of underline */
-  .nav-list a {
-    margin: 0;
-    padding: 0.5rem 0.4rem;
-    border-radius: 8px;
+  .nav-list a:hover,
+  .nav-list a.nav-link--current {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--white);
+  }
+
+  .nav-list a.nav-link--current {
+    background: var(--teal);
+    color: var(--white);
   }
 
   .nav-list a::after {
     display: none;
   }
 
-  .nav-list a:hover,
-  .nav-list a.nav-link--current {
-    background: rgba(255, 255, 255, 0.15);
-  }
-
-  .nav-list a.nav-link--current {
-    background: var(--teal);
-  }
-
+  /* Hide "More" dropdown wrapper, show its items directly */
   .nav-more-wrap {
     display: none;
   }
+  
+  .nav-more-menu {
+    display: none;
+  }
 
+  /* Show all desktop nav items in mobile menu */
   .nav-item-desk {
+    display: list-item !important;
+  }
+  
+  /* Ensure all nav items are visible */
+  .nav-list > li {
     display: list-item;
   }
 
@@ -1756,14 +1954,199 @@ main {
     display: none;
   }
 
-  .menu-toggle,
-  .menu-toggle-cb {
-    display: none !important;
+  /* Overlay backdrop when menu is open - click to close */
+  .nav::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: -1;
+  }
+
+  #menu-toggle-cb:checked ~ .nav::before {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 9999;
+  }
+  
+  /* Ensure nav content is above overlay */
+  .nav > * {
+    position: relative;
+    z-index: 10001;
   }
 }
 
 @media (max-width: 768px) {
   /* Nav/hamburger styles live in 992px block; layout and alignment for mobile */
+  
+  /* Mobile scrolling fixes - ensure vertical scroll works */
+  html {
+    height: auto !important; /* Allow html to expand naturally */
+    min-height: 100% !important; /* Minimum viewport height */
+    overflow-y: auto !important; /* Natural scrolling */
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pinch-zoom;
+    max-height: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  html::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  body {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important; /* Natural scrolling */
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pinch-zoom;
+    position: relative;
+    overscroll-behavior-y: auto !important; /* Allow normal scroll behavior */
+    max-height: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  body::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+  }
+  
+  /* Ensure all scrollable containers work smoothly - NO nested scrollbars */
+  main {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    min-height: auto;
+    height: auto;
+    width: 100%;
+    max-height: none !important;
+  }
+  
+  /* Ensure all sections allow scrolling - NO nested scrollbars */
+  section {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    min-height: auto !important;
+  }
+  
+  /* Hide any nested scrollbars - only html/body should scroll */
+  main::-webkit-scrollbar,
+  section::-webkit-scrollbar,
+  .container::-webkit-scrollbar,
+  .transformations-section::-webkit-scrollbar,
+  .transformations-grid::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+  }
+  
+  main,
+  section,
+  .container,
+  .transformations-section,
+  .transformations-grid {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  /* Hide scrollbar on mobile too - but keep scrolling */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  html,
+  body {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  .transformations-section {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    min-height: auto !important;
+  }
+  
+  .transformations-grid {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    min-height: auto !important;
+  }
+  
+  /* Ensure page content can scroll */
+  .page-hero,
+  .page-hero--transformations {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+  }
+  
+  section {
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Prevent fixed elements from blocking touch */
+  .header {
+    touch-action: pan-y;
+    position: sticky;
+  }
+  
+  /* Fix any elements that might prevent scrolling or cause overflow */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  img, video, iframe, embed, object {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Prevent horizontal scroll */
+  body, html {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Ensure tables and pre don't break layout */
+  table {
+    width: 100%;
+    table-layout: auto;
+    word-wrap: break-word;
+  }
+  
+  pre {
+    overflow-x: auto;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
 
   .logo-img {
     height: 64px;
@@ -1803,12 +2186,15 @@ main {
     font-size: 0.95rem;
   }
   .page-hero-title--transformations {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
     text-align: center;
   }
   .page-hero-subtitle--transformations {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
     text-align: center;
+    padding: 0 1rem;
   }
 
   .testimonial-card {
@@ -1955,37 +2341,16 @@ main {
   }
 
   .footer-inner {
-    gap: 1rem;
-    padding-bottom: 1rem;
-    text-align: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
   }
 
-  .footer-brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .logo-img--footer {
-    height: 32px;
-  }
-
-  .footer-tagline {
+  .footer-contact p {
     margin: 0.35rem 0 0;
     font-size: 0.8rem;
     line-height: 1.4;
   }
 
-  .footer-links {
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-  }
-
-  .footer-links a {
-    font-size: 0.9rem;
-  }
 
   .footer-contact {
     text-align: center;
@@ -2044,6 +2409,36 @@ main {
 }
 
 @media (max-width: 480px) {
+  /* Extra small screens - ensure everything fits */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  body {
+    position: relative !important;
+  }
+  
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  main, section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Prevent horizontal scroll */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
   .hero-ctas {
     flex-direction: column;
     gap: 0.75rem;
@@ -2122,27 +2517,18 @@ main {
     max-width: 100%;
   }
 
-  .footer-links {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-  }
 
   .footer {
     padding: 1rem 0 0;
   }
 
   .footer-inner {
-    gap: 0.75rem;
-    padding-bottom: 0.75rem;
-  }
-
-  .footer-tagline {
-    font-size: 0.75rem;
+    gap: 0.4rem;
+    padding-bottom: 0.5rem;
   }
 
   .footer-contact p {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .footer-bottom {
