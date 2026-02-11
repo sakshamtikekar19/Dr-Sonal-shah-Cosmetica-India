@@ -9,7 +9,7 @@ const CLINIC_NAME = "Dr Sonal Shah Cosmetica India";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-client-info, x-client-version",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-client-info, x-client-version, prefer",
 };
 
 function normalizePhone(phone: string): string {
