@@ -134,8 +134,18 @@ serve(async (req) => {
   const service = body.service || "";
   const messageBody = getMessage(type, name, preferred_date, preferred_time, service);
 
+  // Ensure fromNumber has whatsapp: prefix
+  const fromWhatsApp = fromNumber.startsWith("whatsapp:") ? fromNumber : "whatsapp:" + fromNumber;
+  
+  console.log("WhatsApp numbers:", {
+    from: fromWhatsApp,
+    to: toWhatsApp,
+    fromHasPrefix: fromNumber.startsWith("whatsapp:"),
+    toHasPrefix: toWhatsApp.startsWith("whatsapp:")
+  });
+
   const form = new URLSearchParams();
-  form.set("From", fromNumber);
+  form.set("From", fromWhatsApp);
   form.set("To", toWhatsApp);
   form.set("Body", messageBody);
 
