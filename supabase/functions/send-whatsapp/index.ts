@@ -59,23 +59,10 @@ serve(async (req) => {
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM"); // e.g. whatsapp:+14155238886
 
-  // Debug: log what we got (without exposing full secrets)
-  console.log("Secrets check:", {
-    hasAccountSid: !!accountSid,
-    hasAuthToken: !!authToken,
-    hasFromNumber: !!fromNumber,
-    fromNumberPrefix: fromNumber ? fromNumber.substring(0, 15) + "..." : "missing"
-  });
-
   if (!accountSid || !authToken || !fromNumber) {
     return new Response(
       JSON.stringify({ 
-        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets.",
-        debug: {
-          hasAccountSid: !!accountSid,
-          hasAuthToken: !!authToken,
-          hasFromNumber: !!fromNumber
-        }
+        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets."
       }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
@@ -115,13 +102,6 @@ serve(async (req) => {
   const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   const basicAuth = btoa(`${accountSid}:${authToken}`);
   
-  console.log("Calling Twilio:", {
-    url: twilioUrl,
-    to: toWhatsApp,
-    from: fromNumber,
-    messageLength: messageBody.length
-  });
-  
   const res = await fetch(twilioUrl, {
     method: "POST",
     headers: {
@@ -132,19 +112,13 @@ serve(async (req) => {
   });
 
   const data = await res.json().catch(() => ({}));
-  console.log("Twilio response:", {
-    status: res.status,
-    ok: res.ok,
-    error: data.message || data.error_message || res.statusText
-  });
   
   if (!res.ok) {
     return new Response(
       JSON.stringify({ 
         error: "Twilio error", 
         detail: data.message || data.error_message || res.statusText,
-        twilioCode: data.code,
-        twilioStatus: res.status
+        twilioCode: data.code
       }),
       { status: res.status >= 400 && res.status < 500 ? res.status : 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
