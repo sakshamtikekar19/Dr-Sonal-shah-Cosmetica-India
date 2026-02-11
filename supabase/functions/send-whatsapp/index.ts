@@ -55,25 +55,29 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
     }
 
-  const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-  const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-  const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM"); // e.g. whatsapp:+14155238886
-  const messagingServiceSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID"); // Optional: if using Messaging Service instead of direct number
+  const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")?.trim();
+  const authToken = Deno.env.get("TWILIO_AUTH_TOKEN")?.trim();
+  const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM")?.trim(); // e.g. whatsapp:+14155238886
 
-  if (!accountSid || !authToken) {
+  if (!accountSid || !authToken || !fromNumber) {
     return new Response(
       JSON.stringify({ 
-        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and either TWILIO_WHATSAPP_FROM or TWILIO_MESSAGING_SERVICE_SID in Supabase Edge Function secrets."
+        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets.",
+        missing: {
+          accountSid: !accountSid,
+          authToken: !authToken,
+          fromNumber: !fromNumber
+        }
       }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
   
-  // Must have either direct number OR messaging service
-  if (!fromNumber && !messagingServiceSid) {
+  // Validate Account SID format (should start with AC)
+  if (!accountSid.startsWith("AC")) {
     return new Response(
       JSON.stringify({ 
-        error: "Missing sender. Set either TWILIO_WHATSAPP_FROM (direct WhatsApp number) or TWILIO_MESSAGING_SERVICE_SID (Messaging Service) in Supabase Edge Function secrets."
+        error: "Invalid TWILIO_ACCOUNT_SID format. Account SID should start with 'AC'."
       }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
@@ -106,12 +110,7 @@ serve(async (req) => {
   const messageBody = getMessage(type, name, preferred_date, preferred_time, service);
 
   const form = new URLSearchParams();
-  // Use Messaging Service if provided, otherwise use direct WhatsApp number
-  if (messagingServiceSid) {
-    form.set("MessagingServiceSid", messagingServiceSid);
-  } else {
-    form.set("From", fromNumber);
-  }
+  form.set("From", fromNumber);
   form.set("To", toWhatsApp);
   form.set("Body", messageBody);
 
@@ -130,11 +129,24 @@ serve(async (req) => {
   const data = await res.json().catch(() => ({}));
   
   if (!res.ok) {
+    // Twilio 401 usually means wrong Account SID or Auth Token
+    if (res.status === 401) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Twilio authentication failed", 
+          detail: data.message || data.error_message || "Check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in Supabase secrets",
+          twilioCode: data.code,
+          twilioStatus: res.status
+        }),
+        { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      );
+    }
     return new Response(
       JSON.stringify({ 
         error: "Twilio error", 
         detail: data.message || data.error_message || res.statusText,
-        twilioCode: data.code
+        twilioCode: data.code,
+        twilioStatus: res.status
       }),
       { status: res.status >= 400 && res.status < 500 ? res.status : 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
