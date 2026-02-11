@@ -100,7 +100,11 @@
             preferred_time: payload.preferred_time,
             service: payload.service
           }
-        }).catch(function () { /* ignore */ });
+        }).then(function (r) {
+          if (r.error) console.error('WhatsApp confirm error:', r.error);
+        }).catch(function (err) {
+          console.error('WhatsApp confirm failed:', err);
+        });
         return fetch(form.action, {
           method: 'POST',
           body: formData,

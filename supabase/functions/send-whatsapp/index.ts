@@ -1,9 +1,16 @@
 // Supabase Edge Function: send WhatsApp via Twilio (booking confirmation or cancellation)
 // Set secrets: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM (e.g. whatsapp:+14155238886 for sandbox)
+// Deploy as: send-whatsapp (so the site can call /functions/v1/send-whatsapp from any origin)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const CLINIC_NAME = "Dr Sonal Shah Cosmetica India";
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
 function normalizePhone(phone: string): string {
   const digits = (phone || "").replace(/\D/g, "");
@@ -35,11 +42,12 @@ function getMessage(
 }
 
 serve(async (req) => {
+  // Preflight: must return 200 with CORS so browser allows the POST from GitHub Pages / any origin
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization" } });
+    return new Response(null, { status: 200, headers: CORS_HEADERS });
   }
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
 
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -49,7 +57,7 @@ serve(async (req) => {
   if (!accountSid || !authToken || !fromNumber) {
     return new Response(
       JSON.stringify({ error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets." }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
 
@@ -57,13 +65,13 @@ serve(async (req) => {
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
 
   const type = body.type === "cancel" ? "cancel" : "confirm";
   const phone = normalizePhone(body.phone || "");
   if (!phone || phone.length < 10) {
-    return new Response(JSON.stringify({ error: "Missing or invalid phone number" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Missing or invalid phone number" }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
 
   const toWhatsApp = "whatsapp:+".concat(phone.startsWith("+") ? phone.slice(1) : phone);
@@ -93,11 +101,11 @@ serve(async (req) => {
   if (!res.ok) {
     return new Response(
       JSON.stringify({ error: "Twilio error", detail: data.message || data.error_message || res.statusText }),
-      { status: res.status, headers: { "Content-Type": "application/json" } }
+      { status: res.status, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
   return new Response(JSON.stringify({ ok: true, sid: data.sid }), {
     status: 200,
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
 });
