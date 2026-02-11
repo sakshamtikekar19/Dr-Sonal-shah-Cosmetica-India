@@ -43,8 +43,11 @@ function getMessage(
 
 serve(async (req) => {
   try {
+    console.log("Function invoked:", req.method, req.url);
+    
     // Preflight: must return 200 with CORS so browser allows the POST from GitHub Pages / any origin
     if (req.method === "OPTIONS") {
+      console.log("OPTIONS request - returning CORS headers");
       return new Response(null, { status: 200, headers: CORS_HEADERS });
     }
     
@@ -52,41 +55,63 @@ serve(async (req) => {
     // The frontend (supabase.functions.invoke) automatically adds the anon key.
     // If testing directly, add: Authorization: Bearer YOUR_ANON_KEY
     if (req.method !== "POST") {
+      console.log("Method not allowed:", req.method);
       return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
     }
+    
+    console.log("Processing POST request");
 
+  console.log("Reading environment variables");
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")?.trim();
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN")?.trim();
   const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM")?.trim(); // e.g. whatsapp:+14155238886
 
+  console.log("Secrets check:", {
+    hasAccountSid: !!accountSid,
+    accountSidPrefix: accountSid ? accountSid.substring(0, 2) : "missing",
+    hasAuthToken: !!authToken,
+    hasFromNumber: !!fromNumber,
+    fromNumberPrefix: fromNumber ? fromNumber.substring(0, 10) : "missing"
+  });
+
   if (!accountSid || !authToken || !fromNumber) {
+    const errorResponse = {
+      error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets.",
+      missing: {
+        accountSid: !accountSid,
+        authToken: !authToken,
+        fromNumber: !fromNumber
+      }
+    };
+    console.error("Missing secrets:", errorResponse);
     return new Response(
-      JSON.stringify({ 
-        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets.",
-        missing: {
-          accountSid: !accountSid,
-          authToken: !authToken,
-          fromNumber: !fromNumber
-        }
-      }),
+      JSON.stringify(errorResponse),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
   
   // Validate Account SID format (should start with AC)
   if (!accountSid.startsWith("AC")) {
+    const errorResponse = {
+      error: "Invalid TWILIO_ACCOUNT_SID format. Account SID should start with 'AC'.",
+      receivedPrefix: accountSid.substring(0, 2)
+    };
+    console.error("Invalid Account SID format:", errorResponse);
     return new Response(
-      JSON.stringify({ 
-        error: "Invalid TWILIO_ACCOUNT_SID format. Account SID should start with 'AC'."
-      }),
+      JSON.stringify(errorResponse),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
+  
+  console.log("Secrets validated, proceeding with request");
 
+  console.log("Parsing request body");
   let body: { type?: string; phone?: string; name?: string; preferred_date?: string; preferred_time?: string; service?: string };
   try {
     body = await req.json();
+    console.log("Request body parsed:", { type: body.type, phone: body.phone ? body.phone.substring(0, 5) + "..." : "missing", name: body.name });
   } catch (e) {
+    console.error("Failed to parse JSON:", e);
     return new Response(JSON.stringify({ error: "Invalid JSON body", detail: String(e) }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
 
@@ -151,15 +176,21 @@ serve(async (req) => {
       { status: res.status >= 400 && res.status < 500 ? res.status : 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
+  console.log("Twilio message sent successfully:", data.sid);
   return new Response(JSON.stringify({ ok: true, sid: data.sid }), {
     status: 200,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
   } catch (e) {
+    console.error("Unhandled error in function:", e);
+    const errorDetail = e instanceof Error ? {
+      message: e.message,
+      stack: e.stack,
+      name: e.name
+    } : String(e);
     return new Response(JSON.stringify({ 
       error: "Internal server error", 
-      detail: String(e),
-      stack: e instanceof Error ? e.stack : undefined
+      detail: errorDetail
     }), { 
       status: 500, 
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" } 
