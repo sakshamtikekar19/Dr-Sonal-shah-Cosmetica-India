@@ -58,11 +58,22 @@ serve(async (req) => {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM"); // e.g. whatsapp:+14155238886
+  const messagingServiceSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID"); // Optional: if using Messaging Service instead of direct number
 
-  if (!accountSid || !authToken || !fromNumber) {
+  if (!accountSid || !authToken) {
     return new Response(
       JSON.stringify({ 
-        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM in Supabase Edge Function secrets."
+        error: "WhatsApp not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and either TWILIO_WHATSAPP_FROM or TWILIO_MESSAGING_SERVICE_SID in Supabase Edge Function secrets."
+      }),
+      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+    );
+  }
+  
+  // Must have either direct number OR messaging service
+  if (!fromNumber && !messagingServiceSid) {
+    return new Response(
+      JSON.stringify({ 
+        error: "Missing sender. Set either TWILIO_WHATSAPP_FROM (direct WhatsApp number) or TWILIO_MESSAGING_SERVICE_SID (Messaging Service) in Supabase Edge Function secrets."
       }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
@@ -95,7 +106,12 @@ serve(async (req) => {
   const messageBody = getMessage(type, name, preferred_date, preferred_time, service);
 
   const form = new URLSearchParams();
-  form.set("From", fromNumber);
+  // Use Messaging Service if provided, otherwise use direct WhatsApp number
+  if (messagingServiceSid) {
+    form.set("MessagingServiceSid", messagingServiceSid);
+  } else {
+    form.set("From", fromNumber);
+  }
   form.set("To", toWhatsApp);
   form.set("Body", messageBody);
 
