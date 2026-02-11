@@ -68,14 +68,20 @@ serve(async (req) => {
   let body: { type?: string; phone?: string; name?: string; preferred_date?: string; preferred_time?: string; service?: string };
   try {
     body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Invalid JSON body", detail: String(e) }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
 
   const type = body.type === "cancel" ? "cancel" : "confirm";
-  const phone = normalizePhone(body.phone || "");
+  const phoneRaw = body.phone || "";
+  const phone = normalizePhone(phoneRaw);
   if (!phone || phone.length < 10) {
-    return new Response(JSON.stringify({ error: "Missing or invalid phone number" }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ 
+      error: "Missing or invalid phone number", 
+      received: phoneRaw,
+      normalized: phone,
+      body_received: body 
+    }), { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
 
   const toWhatsApp = "whatsapp:+".concat(phone.startsWith("+") ? phone.slice(1) : phone);
