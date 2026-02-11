@@ -82,6 +82,9 @@
       service: formData.get('service') || '',
       message: formData.get('message') || ''
     };
+    
+    // Debug: log what we're sending
+    console.log('Booking payload:', payload);
 
     formStatus.textContent = '';
     formStatus.className = 'form-status';
@@ -91,22 +94,25 @@
     supabase.from('bookings').insert(payload).select().single()
       .then(function () {
         // Send WhatsApp confirmation (fire-and-forget; don't block success)
+        var whatsappPayload = {
+          type: 'confirm',
+          phone: payload.phone,
+          name: payload.name,
+          preferred_date: payload.preferred_date,
+          preferred_time: payload.preferred_time,
+          service: payload.service || ''
+        };
+        console.log('Sending WhatsApp payload:', whatsappPayload);
         supabase.functions.invoke('send-whatsapp', {
           headers: {
             'Authorization': 'Bearer ' + config.supabaseAnonKey
           },
-          body: {
-            type: 'confirm',
-            phone: payload.phone,
-            name: payload.name,
-            preferred_date: payload.preferred_date,
-            preferred_time: payload.preferred_time,
-            service: payload.service
-          }
+          body: whatsappPayload
         }).then(function (r) {
           if (r.error) {
             console.error('WhatsApp confirm error:', r.error);
             console.error('Error details:', JSON.stringify(r.error, null, 2));
+            if (r.error.message) console.error('Error message:', r.error.message);
           } else {
             console.log('WhatsApp confirm success:', r.data);
           }
