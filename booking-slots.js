@@ -113,8 +113,17 @@
             console.error('WhatsApp confirm error:', r.error);
             console.error('Error details:', JSON.stringify(r.error, null, 2));
             if (r.error.message) console.error('Error message:', r.error.message);
-            if (r.error.context && r.error.context.body) {
-              console.error('Function response body:', r.error.context.body);
+            // Try to get the actual error response
+            if (r.error.context) {
+              console.error('Error context:', r.error.context);
+              if (r.error.context.body && typeof r.error.context.body === 'string') {
+                try {
+                  var errorBody = JSON.parse(r.error.context.body);
+                  console.error('Parsed error body:', errorBody);
+                } catch (e) {
+                  console.error('Raw error body:', r.error.context.body);
+                }
+              }
             }
           } else {
             console.log('WhatsApp confirm success:', r.data);
@@ -122,9 +131,6 @@
         }).catch(function (err) {
           console.error('WhatsApp confirm failed:', err);
           console.error('Error details:', JSON.stringify(err, null, 2));
-          if (err.context && err.context.body) {
-            console.error('Function response body:', err.context.body);
-          }
         });
         return fetch(form.action, {
           method: 'POST',
