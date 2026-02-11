@@ -92,6 +92,9 @@
       .then(function () {
         // Send WhatsApp confirmation (fire-and-forget; don't block success)
         supabase.functions.invoke('send-whatsapp', {
+          headers: {
+            'Authorization': 'Bearer ' + config.supabaseAnonKey
+          },
           body: {
             type: 'confirm',
             phone: payload.phone,

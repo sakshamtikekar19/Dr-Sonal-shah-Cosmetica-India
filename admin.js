@@ -136,7 +136,11 @@
   function deleteBooking(row) {
     if (!confirm('Delete this appointment?\n' + (row.preferred_date || '') + ' ' + (row.preferred_time || '') + ' – ' + (row.name || ''))) return;
     // Send WhatsApp cancellation first (fire-and-forget), then delete
+    var config = window.BOOKING_CONFIG;
     supabase.functions.invoke('send-whatsapp', {
+      headers: {
+        'Authorization': 'Bearer ' + (config && config.supabaseAnonKey ? config.supabaseAnonKey : '')
+      },
       body: {
         type: 'cancel',
         phone: row.phone,
