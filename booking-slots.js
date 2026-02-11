@@ -117,11 +117,16 @@
             if (r.error.context) {
               console.error('Error context:', r.error.context);
               // If context has a Response object, try to read it
-              if (r.error.context.response && typeof r.error.context.response.text === 'function') {
-                r.error.context.response.text().then(function(text) {
+              var responseObj = r.error.context.response || r.error.context;
+              if (responseObj && typeof responseObj.text === 'function' && !responseObj.bodyUsed) {
+                responseObj.text().then(function(text) {
                   try {
                     var errorBody = JSON.parse(text);
-                    console.error('Parsed error body from Response:', errorBody);
+                    console.error('=== ACTUAL ERROR FROM FUNCTION ===');
+                    console.error('Error:', errorBody.error);
+                    console.error('Detail:', errorBody.detail);
+                    console.error('Full error body:', errorBody);
+                    console.error('===================================');
                   } catch (e) {
                     console.error('Raw error body from Response:', text);
                   }
@@ -135,6 +140,9 @@
                 } catch (e) {
                   console.error('Raw error body:', r.error.context.body);
                 }
+              } else if (responseObj && responseObj.status) {
+                console.error('Response status:', responseObj.status);
+                console.error('To see the error, check Supabase Dashboard → Edge Functions → send-whatsapp → Logs');
               }
             }
           } else {
