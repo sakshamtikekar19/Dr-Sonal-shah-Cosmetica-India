@@ -163,6 +163,15 @@ serve(async (req) => {
 
   const data = await res.json().catch(() => ({}));
   
+  console.log("Twilio API response:", {
+    status: res.status,
+    ok: res.ok,
+    messageSid: data.sid,
+    status: data.status,
+    errorCode: data.code,
+    errorMessage: data.message || data.error_message
+  });
+  
   if (!res.ok) {
     // Twilio 401 usually means wrong Account SID or Auth Token
     if (res.status === 401) {
@@ -186,8 +195,21 @@ serve(async (req) => {
       { status: res.status >= 400 && res.status < 500 ? res.status : 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
-  console.log("Twilio message sent successfully:", data.sid);
-  return new Response(JSON.stringify({ ok: true, sid: data.sid }), {
+  
+  // Check message status - even if Twilio accepted it, delivery might fail
+  console.log("Twilio message accepted:", {
+    sid: data.sid,
+    status: data.status,
+    to: data.to,
+    from: data.from
+  });
+  
+  return new Response(JSON.stringify({ 
+    ok: true, 
+    sid: data.sid,
+    status: data.status,
+    message: "Message sent to Twilio. Check Twilio Console → Monitor → Logs for delivery status."
+  }), {
     status: 200,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
