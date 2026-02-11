@@ -9,7 +9,7 @@ const CLINIC_NAME = "Dr Sonal Shah Cosmetica India";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 };
 
 function normalizePhone(phone: string): string {
@@ -46,6 +46,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: CORS_HEADERS });
   }
+  
+  // Note: Supabase Edge Functions require Authorization header by default.
+  // The frontend (supabase.functions.invoke) automatically adds the anon key.
+  // If testing directly, add: Authorization: Bearer YOUR_ANON_KEY
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
   }
