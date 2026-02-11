@@ -65,6 +65,9 @@ serve(async (req) => {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")?.trim();
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN")?.trim();
   const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM")?.trim(); // e.g. whatsapp:+14155238886
+  // Optional: WhatsApp message template SIDs (for production - required for business-initiated messages)
+  const templateConfirmSid = Deno.env.get("TWILIO_WHATSAPP_TEMPLATE_CONFIRM")?.trim(); // e.g. HXxxxxxxxxxxxxx
+  const templateCancelSid = Deno.env.get("TWILIO_WHATSAPP_TEMPLATE_CANCEL")?.trim(); // e.g. HXxxxxxxxxxxxxx
 
   console.log("Secrets check:", {
     hasAccountSid: !!accountSid,
@@ -132,7 +135,6 @@ serve(async (req) => {
   const preferred_date = body.preferred_date || "";
   const preferred_time = body.preferred_time || "";
   const service = body.service || "";
-  const messageBody = getMessage(type, name, preferred_date, preferred_time, service);
 
   // Ensure fromNumber has whatsapp: prefix
   const fromWhatsApp = fromNumber.startsWith("whatsapp:") ? fromNumber : "whatsapp:" + fromNumber;
@@ -147,7 +149,39 @@ serve(async (req) => {
   const form = new URLSearchParams();
   form.set("From", fromWhatsApp);
   form.set("To", toWhatsApp);
-  form.set("Body", messageBody);
+  
+  // Use template if available (required for production WhatsApp), otherwise use free-form Body (Sandbox)
+  const templateSid = type === "confirm" ? templateConfirmSid : templateCancelSid;
+  
+  if (templateSid) {
+    // Use WhatsApp message template
+    console.log("Using WhatsApp template:", templateSid);
+    form.set("ContentSid", templateSid);
+    
+    // Set template variables ({{1}}, {{2}}, etc. based on your template)
+    // Adjust variable names based on your actual template
+    const contentVars: Record<string, string> = {
+      "1": name || "Customer",
+      "2": preferred_date,
+      "3": preferred_time,
+      "4": service || "General consultation"
+    };
+    
+    if (type === "cancel") {
+      // For cancellation, adjust variables as needed
+      contentVars["1"] = name || "Customer";
+      contentVars["2"] = preferred_date;
+      contentVars["3"] = preferred_time;
+    }
+    
+    form.set("ContentVariables", JSON.stringify(contentVars));
+    console.log("Template variables:", contentVars);
+  } else {
+    // Fallback to free-form Body (works for Sandbox, not production)
+    console.log("Using free-form Body (Sandbox mode)");
+    const messageBody = getMessage(type, name, preferred_date, preferred_time, service);
+    form.set("Body", messageBody);
+  }
 
   const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   const basicAuth = btoa(`${accountSid}:${authToken}`);
