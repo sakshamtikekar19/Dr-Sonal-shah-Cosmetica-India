@@ -42,17 +42,18 @@ function getMessage(
 }
 
 serve(async (req) => {
-  // Preflight: must return 200 with CORS so browser allows the POST from GitHub Pages / any origin
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: CORS_HEADERS });
-  }
-  
-  // Note: Supabase Edge Functions require Authorization header by default.
-  // The frontend (supabase.functions.invoke) automatically adds the anon key.
-  // If testing directly, add: Authorization: Bearer YOUR_ANON_KEY
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
-  }
+  try {
+    // Preflight: must return 200 with CORS so browser allows the POST from GitHub Pages / any origin
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 200, headers: CORS_HEADERS });
+    }
+    
+    // Note: Supabase Edge Functions require Authorization header by default.
+    // The frontend (supabase.functions.invoke) automatically adds the anon key.
+    // If testing directly, add: Authorization: Bearer YOUR_ANON_KEY
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+    }
 
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -118,4 +119,14 @@ serve(async (req) => {
     status: 200,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
+  } catch (e) {
+    return new Response(JSON.stringify({ 
+      error: "Internal server error", 
+      detail: String(e),
+      stack: e instanceof Error ? e.stack : undefined
+    }), { 
+      status: 500, 
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" } 
+    });
+  }
 });
