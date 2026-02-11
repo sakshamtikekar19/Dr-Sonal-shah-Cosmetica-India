@@ -158,17 +158,19 @@ serve(async (req) => {
     console.log("Using WhatsApp template:", templateSid);
     form.set("ContentSid", templateSid);
     
-    // Set template variables ({{1}}, {{2}}, etc. based on your template)
-    // Adjust variable names based on your actual template
-    const contentVars: Record<string, string> = {
-      "1": name || "Customer",
-      "2": preferred_date,
-      "3": preferred_time,
-      "4": service || "General consultation"
-    };
+    // Set template variables based on template structure
+    // Most appointment templates use: {{1}} = name, {{2}} = date, {{3}} = time, {{4}} = service/details
+    const contentVars: Record<string, string> = {};
     
-    if (type === "cancel") {
-      // For cancellation, adjust variables as needed
+    if (type === "confirm") {
+      // Appointment confirmation variables
+      contentVars["1"] = name || "Customer";
+      contentVars["2"] = preferred_date;
+      contentVars["3"] = preferred_time;
+      if (service) contentVars["4"] = service;
+      // Add more variables if your template needs them ({{5}}, {{6}}, etc.)
+    } else {
+      // Cancellation variables
       contentVars["1"] = name || "Customer";
       contentVars["2"] = preferred_date;
       contentVars["3"] = preferred_time;
