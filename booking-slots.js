@@ -116,7 +116,19 @@
             // Try to get the actual error response
             if (r.error.context) {
               console.error('Error context:', r.error.context);
-              if (r.error.context.body && typeof r.error.context.body === 'string') {
+              // If context has a Response object, try to read it
+              if (r.error.context.response && typeof r.error.context.response.text === 'function') {
+                r.error.context.response.text().then(function(text) {
+                  try {
+                    var errorBody = JSON.parse(text);
+                    console.error('Parsed error body from Response:', errorBody);
+                  } catch (e) {
+                    console.error('Raw error body from Response:', text);
+                  }
+                }).catch(function(e) {
+                  console.error('Failed to read Response:', e);
+                });
+              } else if (r.error.context.body && typeof r.error.context.body === 'string') {
                 try {
                   var errorBody = JSON.parse(r.error.context.body);
                   console.error('Parsed error body:', errorBody);
@@ -131,6 +143,19 @@
         }).catch(function (err) {
           console.error('WhatsApp confirm failed:', err);
           console.error('Error details:', JSON.stringify(err, null, 2));
+          // Try to extract error from Supabase error object
+          if (err.context && err.context.response) {
+            err.context.response.text().then(function(text) {
+              try {
+                var errorBody = JSON.parse(text);
+                console.error('Error from function:', errorBody);
+              } catch (e) {
+                console.error('Raw error text:', text);
+              }
+            }).catch(function(e) {
+              console.error('Failed to read error response:', e);
+            });
+          }
         });
         return fetch(form.action, {
           method: 'POST',
