@@ -104,9 +104,15 @@
             service: payload.service
           }
         }).then(function (r) {
-          if (r.error) console.error('WhatsApp confirm error:', r.error);
+          if (r.error) {
+            console.error('WhatsApp confirm error:', r.error);
+            console.error('Error details:', JSON.stringify(r.error, null, 2));
+          } else {
+            console.log('WhatsApp confirm success:', r.data);
+          }
         }).catch(function (err) {
           console.error('WhatsApp confirm failed:', err);
+          console.error('Error details:', JSON.stringify(err, null, 2));
         });
         return fetch(form.action, {
           method: 'POST',
