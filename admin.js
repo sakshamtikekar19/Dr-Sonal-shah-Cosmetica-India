@@ -37,6 +37,16 @@
     loginScreen.style.display = 'none';
     adminScreen.style.display = 'block';
     loadBookings();
+    
+    // Verify Block Dates button is visible after showing admin screen
+    var btn = document.getElementById('block-dates-btn');
+    if (btn) {
+      console.log('Block Dates button is visible');
+      btn.style.display = 'inline-block';
+      btn.style.visibility = 'visible';
+    } else {
+      console.error('Block Dates button NOT found after showing admin screen');
+    }
   }
 
   function loadBookings() {
@@ -186,6 +196,129 @@
   editModal.addEventListener('click', function (e) {
     if (e.target === editModal) closeEditModal();
   });
+
+  // Block Dates functionality
+  var blockDatesBtn = document.getElementById('block-dates-btn');
+  var blockDatesModal = document.getElementById('block-dates-modal');
+  var blockDatesForm = document.getElementById('block-dates-form');
+  var blockModalClose = document.getElementById('block-modal-close');
+  var blockCancel = document.getElementById('block-cancel');
+  var blockDateInput = document.getElementById('block-date');
+  var blockedDatesList = document.getElementById('blocked-dates-list');
+  
+  // Debug: Check if button exists
+  if (!blockDatesBtn) {
+    console.warn('Block Dates button not found in DOM');
+  } else {
+    console.log('Block Dates button found');
+  }
+
+  function openBlockDatesModal() {
+    if (!blockDatesModal) return;
+    // Set minimum date to today
+    if (blockDateInput) {
+      blockDateInput.min = new Date().toISOString().split('T')[0];
+    }
+    blockDatesModal.classList.remove('hidden');
+    blockDatesModal.setAttribute('aria-hidden', 'false');
+    loadBlockedDates();
+  }
+
+  function closeBlockDatesModal() {
+    if (!blockDatesModal) return;
+    blockDatesModal.classList.add('hidden');
+    blockDatesModal.setAttribute('aria-hidden', 'true');
+    if (blockDatesForm) blockDatesForm.reset();
+  }
+
+  function loadBlockedDates() {
+    if (!blockedDatesList) return;
+    blockedDatesList.innerHTML = '<p class="text-muted">Loading...</p>';
+    
+    supabase.from('blocked_dates').select('*').order('blocked_date', { ascending: true })
+      .then(function (result) {
+        var blockedDates = result.data || [];
+        if (result.error) throw result.error;
+        
+        if (blockedDates.length === 0) {
+          blockedDatesList.innerHTML = '<p class="text-muted">No dates blocked.</p>';
+          return;
+        }
+        
+        var html = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+        blockedDates.forEach(function (bd) {
+          var dateStr = bd.blocked_date;
+          var reason = bd.reason ? ' — ' + escapeHtml(bd.reason) : '';
+          html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: var(--bg); border-radius: 4px;">';
+          html += '<span><strong>' + escapeHtml(dateStr) + '</strong>' + reason + '</span>';
+          html += '<button type="button" class="btn btn-secondary btn-sm unblock-btn" data-id="' + bd.id + '" data-date="' + dateStr + '">Unblock</button>';
+          html += '</div>';
+        });
+        html += '</div>';
+        blockedDatesList.innerHTML = html;
+        
+        // Bind unblock buttons
+        blockedDatesList.querySelectorAll('.unblock-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = this.getAttribute('data-id');
+            var date = this.getAttribute('data-date');
+            if (confirm('Unblock ' + date + '? Bookings will be allowed again.')) {
+              supabase.from('blocked_dates').delete().eq('id', id)
+                .then(function (result) {
+                  if (result.error) throw result.error;
+                  loadBlockedDates();
+                })
+                .catch(function (err) {
+                  alert('Could not unblock: ' + (err.message || 'Unknown error'));
+                });
+            }
+          });
+        });
+      })
+      .catch(function (err) {
+        blockedDatesList.innerHTML = '<p style="color: #b91c1c;">Error loading blocked dates: ' + (err.message || 'Unknown error') + '</p>';
+      });
+  }
+
+  if (blockDatesBtn) blockDatesBtn.addEventListener('click', openBlockDatesModal);
+  if (blockModalClose) blockModalClose.addEventListener('click', closeBlockDatesModal);
+  if (blockCancel) blockCancel.addEventListener('click', closeBlockDatesModal);
+  if (blockDatesModal) {
+    blockDatesModal.addEventListener('click', function (e) {
+      if (e.target === blockDatesModal) closeBlockDatesModal();
+    });
+  }
+
+  if (blockDatesForm) {
+    blockDatesForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var date = blockDateInput.value;
+      var reason = document.getElementById('block-reason').value.trim();
+      
+      if (!date) {
+        alert('Please select a date');
+        return;
+      }
+      
+      supabase.from('blocked_dates').insert({
+        blocked_date: date,
+        reason: reason || null
+      })
+        .then(function (result) {
+          if (result.error) throw result.error;
+          alert('Date blocked successfully. Bookings will not be allowed on ' + date + '.');
+          blockDatesForm.reset();
+          loadBlockedDates();
+        })
+        .catch(function (err) {
+          if (err.message && err.message.indexOf('duplicate') !== -1) {
+            alert('This date is already blocked.');
+          } else {
+            alert('Could not block date: ' + (err.message || 'Unknown error'));
+          }
+        });
+    });
+  }
 
   supabase.auth.getSession().then(function (result) {
     if (result.data && result.data.session) showAdmin();

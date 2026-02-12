@@ -20,6 +20,7 @@
     .login-box input { width: 100%; padding: 0.65rem 0.85rem; font-size: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; }
     .login-error { color: #b91c1c; font-size: 0.9rem; margin-top: 0.5rem; }
     .bookings-toolbar { margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+    #block-dates-btn { display: inline-block !important; visibility: visible !important; opacity: 1 !important; }
     .bookings-table-wrap { overflow-x: auto; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
     .bookings-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     .bookings-table th, .bookings-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -78,10 +79,14 @@
           <li><strong>View</strong> all appointment requests (date, time, name, WhatsApp, email, treatment, follow-up date, message).</li>
           <li><strong>Edit</strong> any booking — click “Edit”, change details, then “Save changes”.</li>
           <li><strong>Delete</strong> a booking to free that slot so someone else can book it.</li>
+          <li><strong>Block dates</strong> — freeze booking slots for specific days (e.g., clinic closed, doctor unavailable).</li>
         </ul>
       </div>
       <div class="bookings-toolbar">
         <span id="bookings-count" class="text-muted"></span>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal); color: var(--white); border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">🔒 Block Dates</button>
+        </div>
       </div>
       <div class="bookings-table-wrap">
         <table class="bookings-table" id="bookings-table">
@@ -171,6 +176,38 @@
           <button type="submit" class="btn btn-primary">Save changes</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Block Dates Modal -->
+  <div class="modal-overlay hidden" id="block-dates-modal" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Block Booking Dates</h3>
+        <button type="button" class="modal-close" id="block-modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="block-dates-form">
+          <div class="form-row">
+            <label for="block-date">Select date to block</label>
+            <input type="date" id="block-date" required min="">
+          </div>
+          <div class="form-row">
+            <label for="block-reason">Reason (optional)</label>
+            <input type="text" id="block-reason" placeholder="e.g., Clinic closed, Doctor unavailable">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="block-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">Block Date</button>
+          </div>
+        </form>
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.1);">
+          <h3 style="font-size: 1rem; margin-bottom: 1rem;">Blocked Dates</h3>
+          <div id="blocked-dates-list" style="max-height: 300px; overflow-y: auto;">
+            <p class="text-muted">Loading...</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

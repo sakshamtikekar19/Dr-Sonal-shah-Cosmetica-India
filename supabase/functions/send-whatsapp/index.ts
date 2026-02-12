@@ -13,9 +13,23 @@ const CORS_HEADERS = {
 };
 
 function normalizePhone(phone: string): string {
+  // Remove all non-digit characters
   const digits = (phone || "").replace(/\D/g, "");
-  if (digits.length === 10 && !digits.startsWith("91")) return "91" + digits;
-  if (digits.length >= 10) return digits.startsWith("91") ? digits : "91" + digits;
+  
+  // If empty, return empty
+  if (!digits) return "";
+  
+  // If already starts with country code (11+ digits), return as is
+  if (digits.length >= 11) {
+    return digits;
+  }
+  
+  // If 10 digits, assume Indian number (91)
+  if (digits.length === 10) {
+    return "91" + digits;
+  }
+  
+  // If less than 10 digits, return as is (will be validated later)
   return digits;
 }
 
@@ -232,12 +246,39 @@ serve(async (req) => {
         { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
       );
     }
+    
+    // Error 63049: Meta declined to deliver WhatsApp message
+    if (data.code === 63049) {
+      const errorDetail = data.message || data.error_message || "Meta declined to deliver this WhatsApp message";
+      console.error("Error 63049 - Meta delivery declined:", {
+        to: toWhatsApp,
+        from: fromWhatsApp,
+        templateSid: templateSid,
+        detail: errorDetail
+      });
+      return new Response(
+        JSON.stringify({ 
+          error: "WhatsApp message delivery declined by Meta", 
+          detail: errorDetail + ". Common causes: Template not approved, recipient limits, or number format issue.",
+          twilioCode: data.code,
+          twilioStatus: res.status,
+          troubleshooting: {
+            checkTemplate: "Verify template is approved in Twilio Console → Messaging → Templates",
+            checkNumber: `Verify recipient number format: ${toWhatsApp}`,
+            checkLimits: "Recipient may have reached message limits - wait before retrying"
+          }
+        }),
+        { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      );
+    }
+    
     return new Response(
       JSON.stringify({ 
         error: "Twilio error", 
         detail: data.message || data.error_message || res.statusText,
         twilioCode: data.code,
-        twilioStatus: res.status
+        twilioStatus: res.status,
+        fullResponse: data
       }),
       { status: res.status >= 400 && res.status < 500 ? res.status : 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
