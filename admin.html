@@ -37,6 +37,10 @@
     .modal-body .form-row { margin-bottom: 1rem; }
     .modal-body label { display: block; margin-bottom: 0.35rem; font-weight: 500; font-size: 0.9rem; }
     .modal-body input, .modal-body select, .modal-body textarea { width: 100%; padding: 0.6rem 0.8rem; font-size: 0.95rem; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .modal-body input[type="radio"] { width: auto; margin-right: 0.5rem; cursor: pointer; }
+    .modal-body label { cursor: pointer; display: inline-flex; align-items: center; }
+    #range-date-row label { display: block; margin-top: 0.75rem; margin-bottom: 0.35rem; }
+    #range-date-row label:first-child { margin-top: 0; }
     .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: flex-end; gap: 0.5rem; }
     .empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); font-size: 1.05rem; }
     .admin-intro { background: var(--bg-section); padding: 1rem 1.25rem; border-radius: var(--radius); margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text); }
@@ -84,9 +88,7 @@
       </div>
       <div class="bookings-toolbar">
         <span id="bookings-count" class="text-muted"></span>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal); color: var(--white); border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">🔒 Block Dates</button>
-        </div>
+        <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal) !important; color: var(--white) !important; border: none !important; padding: 0.5rem 1rem !important; border-radius: 6px !important; cursor: pointer !important; font-weight: 600 !important; margin-left: auto;">🔒 Block Dates</button>
       </div>
       <div class="bookings-table-wrap">
         <table class="bookings-table" id="bookings-table">
@@ -189,8 +191,24 @@
       <div class="modal-body">
         <form id="block-dates-form">
           <div class="form-row">
+            <label>
+              <input type="radio" name="block-type" value="single" checked id="block-type-single" style="width: auto; margin-right: 0.5rem;">
+              Single date
+            </label>
+            <label style="margin-left: 1rem;">
+              <input type="radio" name="block-type" value="range" id="block-type-range" style="width: auto; margin-right: 0.5rem;">
+              Date range
+            </label>
+          </div>
+          <div class="form-row" id="single-date-row">
             <label for="block-date">Select date to block</label>
-            <input type="date" id="block-date" required min="">
+            <input type="date" id="block-date" min="">
+          </div>
+          <div class="form-row" id="range-date-row" style="display: none;">
+            <label for="block-date-from">From date</label>
+            <input type="date" id="block-date-from" min="">
+            <label for="block-date-to" style="margin-top: 0.75rem;">To date</label>
+            <input type="date" id="block-date-to" min="">
           </div>
           <div class="form-row">
             <label for="block-reason">Reason (optional)</label>
@@ -198,7 +216,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="block-cancel">Cancel</button>
-            <button type="submit" class="btn btn-primary">Block Date</button>
+            <button type="submit" class="btn btn-primary">Block Dates</button>
           </div>
         </form>
         <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.1);">

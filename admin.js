@@ -38,15 +38,33 @@
     adminScreen.style.display = 'block';
     loadBookings();
     
-    // Verify Block Dates button is visible after showing admin screen
-    var btn = document.getElementById('block-dates-btn');
-    if (btn) {
-      console.log('Block Dates button is visible');
-      btn.style.display = 'inline-block';
-      btn.style.visibility = 'visible';
-    } else {
-      console.error('Block Dates button NOT found after showing admin screen');
-    }
+    // Force Block Dates button to be visible
+    setTimeout(function() {
+      var btn = document.getElementById('block-dates-btn');
+      if (btn) {
+        console.log('Block Dates button found and made visible');
+        btn.style.display = 'inline-block';
+        btn.style.visibility = 'visible';
+        btn.style.opacity = '1';
+        btn.style.position = 'relative';
+        btn.style.zIndex = '10';
+      } else {
+        console.error('Block Dates button NOT found - check HTML');
+        // Try to find it again
+        var toolbar = document.querySelector('.bookings-toolbar');
+        if (toolbar) {
+          console.log('Toolbar found, creating button manually');
+          var manualBtn = document.createElement('button');
+          manualBtn.type = 'button';
+          manualBtn.className = 'btn btn-secondary';
+          manualBtn.id = 'block-dates-btn';
+          manualBtn.textContent = '🔒 Block Dates';
+          manualBtn.style.cssText = 'display: inline-block !important; background: var(--teal) !important; color: var(--white) !important; padding: 0.5rem 1rem !important; margin-left: auto !important;';
+          toolbar.appendChild(manualBtn);
+          manualBtn.addEventListener('click', openBlockDatesModal);
+        }
+      }
+    }, 100);
   }
 
   function loadBookings() {
@@ -213,16 +231,67 @@
     console.log('Block Dates button found');
   }
 
+  // Handle block type toggle (defined outside so it's not recreated each time)
+  function toggleBlockType() {
+    var blockTypeSingle = document.getElementById('block-type-single');
+    var blockTypeRange = document.getElementById('block-type-range');
+    var singleDateRow = document.getElementById('single-date-row');
+    var rangeDateRow = document.getElementById('range-date-row');
+    var blockDateFrom = document.getElementById('block-date-from');
+    var blockDateTo = document.getElementById('block-date-to');
+    
+    if (!blockTypeSingle || !blockTypeRange || !singleDateRow || !rangeDateRow) return;
+    
+    if (blockTypeSingle.checked) {
+      singleDateRow.style.display = 'block';
+      rangeDateRow.style.display = 'none';
+      if (blockDateInput) blockDateInput.required = true;
+      if (blockDateFrom) blockDateFrom.required = false;
+      if (blockDateTo) blockDateTo.required = false;
+    } else {
+      singleDateRow.style.display = 'none';
+      rangeDateRow.style.display = 'block';
+      if (blockDateInput) blockDateInput.required = false;
+      if (blockDateFrom) blockDateFrom.required = true;
+      if (blockDateTo) blockDateTo.required = true;
+    }
+  }
+
   function openBlockDatesModal() {
     if (!blockDatesModal) return;
     // Set minimum date to today
+    var today = new Date().toISOString().split('T')[0];
     if (blockDateInput) {
-      blockDateInput.min = new Date().toISOString().split('T')[0];
+      blockDateInput.min = today;
     }
+    var blockDateFrom = document.getElementById('block-date-from');
+    var blockDateTo = document.getElementById('block-date-to');
+    if (blockDateFrom) blockDateFrom.min = today;
+    if (blockDateTo) blockDateTo.min = today;
+    
+    // Set initial state
+    var blockTypeSingle = document.getElementById('block-type-single');
+    if (blockTypeSingle) {
+      blockTypeSingle.checked = true;
+    }
+    toggleBlockType();
+    
     blockDatesModal.classList.remove('hidden');
     blockDatesModal.setAttribute('aria-hidden', 'false');
     loadBlockedDates();
   }
+  
+  // Set up toggle listeners once (when page loads)
+  setTimeout(function() {
+    var blockTypeSingle = document.getElementById('block-type-single');
+    var blockTypeRange = document.getElementById('block-type-range');
+    if (blockTypeSingle) {
+      blockTypeSingle.addEventListener('change', toggleBlockType);
+    }
+    if (blockTypeRange) {
+      blockTypeRange.addEventListener('change', toggleBlockType);
+    }
+  }, 500);
 
   function closeBlockDatesModal() {
     if (!blockDatesModal) return;
@@ -292,29 +361,81 @@
   if (blockDatesForm) {
     blockDatesForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      var date = blockDateInput.value;
+      var blockTypeSingle = document.getElementById('block-type-single');
+      var isSingle = blockTypeSingle && blockTypeSingle.checked;
       var reason = document.getElementById('block-reason').value.trim();
       
-      if (!date) {
-        alert('Please select a date');
+      var datesToBlock = [];
+      
+      if (isSingle) {
+        // Single date
+        var date = blockDateInput.value;
+        if (!date) {
+          alert('Please select a date');
+          return;
+        }
+        datesToBlock.push(date);
+      } else {
+        // Date range
+        var dateFrom = document.getElementById('block-date-from').value;
+        var dateTo = document.getElementById('block-date-to').value;
+        
+        if (!dateFrom || !dateTo) {
+          alert('Please select both from and to dates');
+          return;
+        }
+        
+        if (dateFrom > dateTo) {
+          alert('From date must be before or equal to To date');
+          return;
+        }
+        
+        // Generate all dates in range
+        var start = new Date(dateFrom);
+        var end = new Date(dateTo);
+        var current = new Date(start);
+        
+        while (current <= end) {
+          datesToBlock.push(current.toISOString().split('T')[0]);
+          current.setDate(current.getDate() + 1);
+        }
+      }
+      
+      if (datesToBlock.length === 0) {
+        alert('Please select at least one date');
         return;
       }
       
-      supabase.from('blocked_dates').insert({
-        blocked_date: date,
-        reason: reason || null
-      })
+      // Insert all dates
+      var inserts = datesToBlock.map(function(date) {
+        return {
+          blocked_date: date,
+          reason: reason || null
+        };
+      });
+      
+      supabase.from('blocked_dates').insert(inserts)
         .then(function (result) {
           if (result.error) throw result.error;
-          alert('Date blocked successfully. Bookings will not be allowed on ' + date + '.');
+          var count = datesToBlock.length;
+          var message = count === 1 
+            ? 'Date blocked successfully. Bookings will not be allowed on ' + datesToBlock[0] + '.'
+            : count + ' dates blocked successfully (' + datesToBlock[0] + ' to ' + datesToBlock[datesToBlock.length - 1] + ').';
+          alert(message);
           blockDatesForm.reset();
+          // Reset to single date mode
+          if (blockTypeSingle) blockTypeSingle.checked = true;
+          var singleDateRow = document.getElementById('single-date-row');
+          var rangeDateRow = document.getElementById('range-date-row');
+          if (singleDateRow) singleDateRow.style.display = 'block';
+          if (rangeDateRow) rangeDateRow.style.display = 'none';
           loadBlockedDates();
         })
         .catch(function (err) {
           if (err.message && err.message.indexOf('duplicate') !== -1) {
-            alert('This date is already blocked.');
+            alert('Some of these dates are already blocked. Please check the blocked dates list.');
           } else {
-            alert('Could not block date: ' + (err.message || 'Unknown error'));
+            alert('Could not block dates: ' + (err.message || 'Unknown error'));
           }
         });
     });
