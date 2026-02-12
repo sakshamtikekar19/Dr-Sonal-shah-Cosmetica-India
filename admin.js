@@ -107,32 +107,6 @@
     editModal.setAttribute('aria-hidden', 'true');
   }
 
-  function sendCancellationEmail(row, callback) {
-    var config = window.BOOKING_CONFIG;
-    var pubKey = config && config.emailjsPublicKey;
-    var serviceId = config && config.emailjsServiceId;
-    var templateId = config && config.emailjsTemplateId;
-    if (!pubKey || !serviceId || !templateId || !row.email) {
-      if (callback) callback();
-      return;
-    }
-    if (typeof window.emailjs === 'undefined') {
-      if (callback) callback();
-      return;
-    }
-    window.emailjs.send(serviceId, templateId, {
-      to_email: row.email,
-      customer_name: row.name || 'Customer',
-      booking_date: row.preferred_date || '',
-      booking_time: row.preferred_time || '',
-      clinic_name: 'Dr Sonal Shah Cosmetica India'
-    }, pubKey).then(function () {
-      if (callback) callback();
-    }).catch(function () {
-      if (callback) callback();
-    });
-  }
-
   function deleteBooking(row) {
     if (!confirm('Delete this appointment?\n' + (row.preferred_date || '') + ' ' + (row.preferred_time || '') + ' – ' + (row.name || ''))) return;
     // Send WhatsApp cancellation first (fire-and-forget), then delete
@@ -152,16 +126,8 @@
     supabase.from('bookings').delete().eq('id', row.id)
       .then(function (result) {
         if (result.error) throw result.error;
-        sendCancellationEmail(row, function () {
-          loadBookings();
-        });
-        var msg = 'Booking deleted. A WhatsApp cancellation has been sent to the customer.';
-        if (row.email && window.BOOKING_CONFIG && window.BOOKING_CONFIG.emailjsTemplateId) {
-          msg = 'Booking deleted. Cancellation sent via WhatsApp and email.';
-        } else if (row.email) {
-          msg = 'Booking deleted. WhatsApp sent. To also email on cancel, set up EmailJS (see ADMIN-SETUP.md).';
-        }
-        setTimeout(function () { alert(msg); }, 300);
+        loadBookings();
+        setTimeout(function () { alert('Booking deleted. A WhatsApp cancellation has been sent to the customer.'); }, 300);
       })
       .catch(function (err) {
         alert('Could not delete: ' + (err.message || 'Unknown error'));

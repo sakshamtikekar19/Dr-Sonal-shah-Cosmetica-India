@@ -4,14 +4,39 @@
   // Splash — show logo first, then fade out and remove
   var splash = document.getElementById('splash');
   if (splash) {
+    // Allow scrolling immediately (don't wait for load)
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+    
     window.addEventListener('load', function () {
       setTimeout(function () {
         splash.classList.add('splash--hidden');
         splash.addEventListener('transitionend', function () {
           splash.remove();
+          // Ensure scrolling is enabled after splash is removed
+          document.body.style.overflow = '';
+          document.documentElement.style.overflow = '';
         }, { once: true });
       }, 500);
     });
+    
+    // Fallback: remove splash after 2 seconds even if load event doesn't fire
+    setTimeout(function() {
+      if (splash && !splash.classList.contains('splash--hidden')) {
+        splash.classList.add('splash--hidden');
+        setTimeout(function() {
+          if (splash.parentNode) {
+            splash.remove();
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+          }
+        }, 650);
+      }
+    }, 2000);
+  } else {
+    // No splash - ensure scrolling is enabled
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
   }
 
   var menuToggle = document.querySelector('.menu-toggle');

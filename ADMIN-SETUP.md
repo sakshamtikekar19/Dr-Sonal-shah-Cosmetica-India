@@ -46,43 +46,6 @@ To set a **follow-up date** for each booking (e.g. when to call/email the client
 
 The site can send **automatic WhatsApp** messages for booking confirmation (after a customer books) and for cancellation (when you delete a booking). This uses **Twilio** and a **Supabase Edge Function**. See **WHATSAPP-SETUP.md** for step-by-step setup (Twilio account, Sandbox, deploy Edge Function, set secrets).
 
-## 7. (Optional) Email customer when a booking is cancelled
-
-When the admin **deletes** a booking, the customer can automatically receive an email saying their appointment was cancelled. This uses **EmailJS** (free tier).
-
-### Set up EmailJS
-
-1. Go to [emailjs.com](https://www.emailjs.com/) and sign up (free).
-2. **Email Services** → **Add New Service** → connect your Gmail (or other). Note the **Service ID**.
-3. **Email Templates** → **Create New Template**.
-   - **To Email:** `{{to_email}}` (so each customer gets the email).
-   - **Subject:** e.g. `Appointment cancelled – Dr Sonal Shah Cosmetica India`
-   - **Body** (example):
-     ```
-     Dear {{customer_name}},
-
-     Your appointment at {{clinic_name}} on {{booking_date}} at {{booking_time}} has been cancelled.
-
-     To book again, visit our website or contact us on WhatsApp: +91 98704 39934.
-
-     – Dr Sonal Shah Cosmetica India
-     ```
-   - You can use these variables: `{{to_email}}`, `{{customer_name}}`, `{{booking_date}}`, `{{booking_time}}`, `{{clinic_name}}`.
-   - Save and note the **Template ID**.
-4. **Account** → **API Keys** → copy your **Public Key**.
-
-### Add keys to the site
-
-Open **`booking-config.js`** and set (replace the empty strings):
-
-```js
-emailjsPublicKey: 'YOUR_PUBLIC_KEY',
-emailjsServiceId: 'YOUR_SERVICE_ID',
-emailjsTemplateId: 'YOUR_TEMPLATE_ID'
-```
-
-Save the file. After that, when the admin deletes a booking **and** the booking has an email, the customer will receive the cancellation email. If the booking has no email, the admin will see a message that no notification was sent. (WhatsApp cancellation is sent separately when configured; see WHATSAPP-SETUP.md.)
-
 ## Security note
 
 - Keep the admin URL (`admin.html`) private and only share the login email/password with the clinic owner.
