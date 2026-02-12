@@ -65,9 +65,14 @@ serve(async (req) => {
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")?.trim();
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN")?.trim();
   const fromNumber = Deno.env.get("TWILIO_WHATSAPP_FROM")?.trim(); // e.g. whatsapp:+14155238886
-  // Optional: WhatsApp message template SIDs (for production - required for business-initiated messages)
+  // WhatsApp message template SIDs (required for production - business-initiated messages)
   const templateConfirmSid = Deno.env.get("TWILIO_WHATSAPP_TEMPLATE_CONFIRM")?.trim(); // e.g. HXxxxxxxxxxxxxx
   const templateCancelSid = Deno.env.get("TWILIO_WHATSAPP_TEMPLATE_CANCEL")?.trim(); // e.g. HXxxxxxxxxxxxxx
+  
+  console.log("Template SIDs:", {
+    confirm: templateConfirmSid ? templateConfirmSid.substring(0, 10) + "..." : "NOT SET",
+    cancel: templateCancelSid ? templateCancelSid.substring(0, 10) + "..." : "NOT SET"
+  });
 
   console.log("Secrets check:", {
     hasAccountSid: !!accountSid,
@@ -150,40 +155,46 @@ serve(async (req) => {
   form.set("From", fromWhatsApp);
   form.set("To", toWhatsApp);
   
-  // Use template if available (required for production WhatsApp), otherwise use free-form Body (Sandbox)
+  // Use template (required for production WhatsApp business-initiated messages)
   const templateSid = type === "confirm" ? templateConfirmSid : templateCancelSid;
   
-  if (templateSid) {
-    // Use WhatsApp message template
-    console.log("Using WhatsApp template:", templateSid);
-    form.set("ContentSid", templateSid);
-    
-    // Set template variables to match your templates:
-    // Confirmation: {{1}} = name, {{2}} = date, {{3}} = time, {{4}} = service
-    // Cancellation: {{1}} = name, {{2}} = date, {{3}} = time
-    const contentVars: Record<string, string> = {};
-    
-    if (type === "confirm") {
-      // Appointment confirmation template variables
-      contentVars["1"] = name || "Customer";
-      contentVars["2"] = preferred_date;
-      contentVars["3"] = preferred_time;
-      contentVars["4"] = service || "General consultation";
-    } else {
-      // Cancellation template variables
-      contentVars["1"] = name || "Customer";
-      contentVars["2"] = preferred_date;
-      contentVars["3"] = preferred_time;
-    }
-    
-    form.set("ContentVariables", JSON.stringify(contentVars));
-    console.log("Template variables:", contentVars);
-  } else {
-    // Fallback to free-form Body (works for Sandbox, not production)
-    console.log("Using free-form Body (Sandbox mode)");
-    const messageBody = getMessage(type, name, preferred_date, preferred_time, service);
-    form.set("Body", messageBody);
+  if (!templateSid) {
+    // No template = error for production WhatsApp
+    console.error("Template SID missing for type:", type);
+    return new Response(
+      JSON.stringify({ 
+        error: "WhatsApp template not configured", 
+        detail: `Set TWILIO_WHATSAPP_TEMPLATE_${type === "confirm" ? "CONFIRM" : "CANCEL"} in Supabase secrets`,
+        type: type
+      }),
+      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+    );
   }
+  
+  // Use WhatsApp message template
+  console.log("Using WhatsApp template:", templateSid.substring(0, 10) + "...");
+  form.set("ContentSid", templateSid);
+  
+  // Set template variables to match your templates:
+  // Confirmation: {{1}} = name, {{2}} = date, {{3}} = time, {{4}} = service
+  // Cancellation: {{1}} = name, {{2}} = date, {{3}} = time
+  const contentVars: Record<string, string> = {};
+  
+  if (type === "confirm") {
+    // Appointment confirmation template variables
+    contentVars["1"] = name || "Customer";
+    contentVars["2"] = preferred_date;
+    contentVars["3"] = preferred_time;
+    contentVars["4"] = service || "General consultation";
+  } else {
+    // Cancellation template variables
+    contentVars["1"] = name || "Customer";
+    contentVars["2"] = preferred_date;
+    contentVars["3"] = preferred_time;
+  }
+  
+  form.set("ContentVariables", JSON.stringify(contentVars));
+  console.log("Template variables:", contentVars);
 
   const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   const basicAuth = btoa(`${accountSid}:${authToken}`);
