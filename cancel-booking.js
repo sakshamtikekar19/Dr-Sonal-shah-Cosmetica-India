@@ -78,6 +78,9 @@
           form.reset();
           
           // Optionally trigger WhatsApp notification via Edge Function (fire-and-forget)
+          // Note: This requires send-whatsapp Edge Function with JWT verification OFF
+          // If you see 401 errors, either turn off JWT verification for send-whatsapp
+          // or remove this block - cancellation already succeeded
           if (data.booking) {
             supabase.functions.invoke('send-whatsapp', {
               body: {
@@ -87,8 +90,10 @@
                 preferred_date: data.booking.preferred_date,
                 preferred_time: data.booking.preferred_time
               }
-            }).catch(function() {
+            }).catch(function(err) {
               // Ignore WhatsApp errors - cancellation already succeeded
+              // 401 means JWT verification is on - turn it off in Supabase Dashboard
+              console.log('WhatsApp notification skipped (optional):', err);
             });
           }
         }
