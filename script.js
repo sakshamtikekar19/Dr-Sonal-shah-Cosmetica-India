@@ -65,7 +65,7 @@
   var bookingConfig = window.BOOKING_CONFIG;
   var useSlotBooking = bookingConfig && bookingConfig.supabaseUrl && bookingConfig.supabaseAnonKey &&
     bookingConfig.supabaseUrl.indexOf('YOUR_') !== 0 && bookingConfig.supabaseAnonKey.indexOf('YOUR_') !== 0;
-  var bookingForm = document.querySelector('.booking-form');
+  var bookingForm = document.getElementById('booking-form-main') || document.querySelector('.booking-form');
   var formStatus = document.getElementById('form-status');
   var submitBtn = document.getElementById('booking-submit');
   if (bookingForm && formStatus && submitBtn && !useSlotBooking) {
@@ -76,7 +76,8 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending…';
       var formData = new FormData(bookingForm);
-      var formspreeUrl = bookingForm.getAttribute('data-formspree-url') || bookingForm.action;
+      var formspreeUrl = bookingForm.getAttribute('data-formspree-url');
+      if (!formspreeUrl) return;
       fetch(formspreeUrl, {
         method: 'POST',
         body: formData,

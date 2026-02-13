@@ -1528,6 +1528,24 @@ main {
   margin-top: 0.75rem;
 }
 
+/* Cancel section: visible alternate contact line */
+.cancel-alt-contact {
+  color: var(--text);
+  font-weight: 500;
+}
+.cancel-alt-contact a {
+  color: var(--teal);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cancel-alt-contact a.link-whatsapp {
+  color: #25d366;
+}
+.cancel-alt-contact a:hover {
+  opacity: 0.9;
+}
+
 /* Reviews page */
 .reviews-leave {
   padding: 3rem 0 4rem;

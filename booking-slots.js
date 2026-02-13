@@ -18,7 +18,7 @@
     '08:00-08:30', '08:30-09:00'
   ];
 
-  var form = document.querySelector('.booking-form');
+  var form = document.getElementById('booking-form-main') || document.querySelector('.booking-form');
   var dateInput = document.getElementById('booking-date');
   var timeSelect = document.getElementById('booking-time');
   var formStatus = document.getElementById('form-status');

@@ -48,7 +48,7 @@
         <div class="appointment-cta-inner">
           <h2 class="section-title">Book Your Consultation with Ease</h2>
           <p class="appointment-cta-text">Fill in your details and Dr Sonal Shah Cosmetica India will confirm your appointment shortly.</p>
-          <form class="booking-form" action="javascript:void(0)" method="POST" data-formspree-url="https://formspree.io/f/xvzqwprn" aria-label="Book appointment">
+          <form id="booking-form-main" class="booking-form" method="POST" data-formspree-url="https://formspree.io/f/xvzqwprn" aria-label="Book appointment">
             <input type="hidden" name="_subject" value="New Appointment Request – Dr Sonal Shah Cosmetica India">
             <div class="form-row">
               <label for="booking-name">Name <span aria-hidden="true">*</span></label>
@@ -117,6 +117,7 @@
             <div class="form-status" id="form-status" aria-live="polite"></div>
             <button type="submit" class="btn btn-primary btn-large btn-submit" id="booking-submit">Request Appointment</button>
           </form>
+          <script>(function(){var f=document.getElementById('booking-form-main');if(f)f.onsubmit=function(){return false;};})();</script>
           <p class="form-or">— or book instantly via —</p>
           <a href="https://wa.me/919870439934?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment%20at%20Dr%20Sonal%20Shah%20Cosmetica%20India." class="btn btn-whatsapp btn-large" target="_blank" rel="noopener">WhatsApp</a>
 
@@ -159,7 +160,7 @@
               <div class="form-status" id="cancel-form-status" aria-live="polite"></div>
               <button type="submit" class="btn btn-secondary btn-large" id="cancel-submit-btn">Cancel my appointment</button>
             </form>
-            <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">You can also cancel by messaging us on <a href="https://wa.me/919870439934">WhatsApp</a> or calling +91 98704 39934.</p>
+            <p class="cancel-alt-contact" style="margin-top: 1.25rem; font-size: 1rem; font-weight: 500; color: var(--text);">You can also cancel by messaging us on <a href="https://wa.me/919870439934" class="link-whatsapp">WhatsApp</a> or calling <a href="tel:+919870439934">+91 98704 39934</a>.</p>
           </div>
         </div>
       </div>
