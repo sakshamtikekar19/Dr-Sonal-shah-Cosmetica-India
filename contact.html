@@ -118,6 +118,48 @@
           </form>
           <p class="form-or">— or book instantly via —</p>
           <a href="https://wa.me/919870439934?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment%20at%20Dr%20Sonal%20Shah%20Cosmetica%20India." class="btn btn-whatsapp btn-large" target="_blank" rel="noopener">WhatsApp</a>
+
+          <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(0,0,0,0.08);">
+            <h3 class="section-title" style="font-size: 1.25rem; margin-bottom: 0.5rem;">Cancel my appointment</h3>
+            <p class="appointment-cta-text" style="margin-bottom: 1rem;">Need to cancel? Enter the details you used to book and we’ll cancel your slot. You’ll get a WhatsApp confirmation.</p>
+            <form class="booking-form cancel-form" id="cancel-booking-form" style="max-width: 100%;">
+              <div class="form-row form-row-half">
+                <label for="cancel-phone">WhatsApp number <span aria-hidden="true">*</span></label>
+                <input type="tel" id="cancel-phone" required placeholder="e.g. 98704 39934" aria-label="Your WhatsApp number">
+              </div>
+              <div class="form-row form-row-half">
+                <label for="cancel-date">Booking date <span aria-hidden="true">*</span></label>
+                <input type="date" id="cancel-date" required aria-label="Appointment date">
+              </div>
+              <div class="form-row">
+                <label for="cancel-time">Time slot <span aria-hidden="true">*</span></label>
+                <select id="cancel-time" required aria-label="Appointment time slot">
+                  <option value="">— Select time —</option>
+                  <optgroup label="Morning">
+                    <option value="10:00-10:30">10:00 – 10:30 AM</option>
+                    <option value="10:30-11:00">10:30 – 11:00 AM</option>
+                    <option value="11:00-11:30">11:00 – 11:30 AM</option>
+                    <option value="11:30-12:00">11:30 – 12:00 PM</option>
+                    <option value="12:00-12:30">12:00 – 12:30 PM</option>
+                    <option value="12:30-01:00">12:30 – 1:00 PM</option>
+                    <option value="01:00-01:30">1:00 – 1:30 PM</option>
+                    <option value="01:30-02:00">1:30 – 2:00 PM</option>
+                  </optgroup>
+                  <optgroup label="Evening">
+                    <option value="06:00-06:30">6:00 – 6:30 PM</option>
+                    <option value="06:30-07:00">6:30 – 7:00 PM</option>
+                    <option value="07:00-07:30">7:00 – 7:30 PM</option>
+                    <option value="07:30-08:00">7:30 – 8:00 PM</option>
+                    <option value="08:00-08:30">8:00 – 8:30 PM</option>
+                    <option value="08:30-09:00">8:30 – 9:00 PM</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="form-status" id="cancel-form-status" aria-live="polite"></div>
+              <button type="submit" class="btn btn-secondary btn-large" id="cancel-submit-btn">Cancel my appointment</button>
+            </form>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">You can also cancel by messaging us on <a href="https://wa.me/919870439934">WhatsApp</a> or calling +91 98704 39934.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -138,5 +180,6 @@
   <script src="booking-config.js"></script>
   <script src="script.js"></script>
   <script src="booking-slots.js"></script>
+  <script src="cancel-booking.js"></script>
 </body>
 </html>
