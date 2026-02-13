@@ -50,6 +50,6 @@ The function allows all origins (`*`). If you restrict CORS later, allow your si
 
 ## Troubleshooting
 
-- **"Failed to send a request to the Edge Function" / "Could not reach the server"** – (1) **Push the latest code to GitHub** and redeploy your site so the live site uses the new `cancel-booking.js` (fetch + apikey header). Hard refresh (Ctrl+F5) after deploy. (2) In Supabase Dashboard → **Edge Functions** → **cancel-booking** → **Settings**, turn **off** "Enforce JWT verification". (3) Ensure the function is deployed: `npx supabase functions deploy cancel-booking` (after `npx supabase login`). (4) If you see "Access denied", JWT verification is still on—turn it off for this function.
+- **CORS error / "Failed to send request"** – (1) **Redeploy the Edge Function**: `npx supabase functions deploy cancel-booking` (after `npx supabase login`). (2) In Supabase Dashboard → **Edge Functions** → **cancel-booking** → **Settings**, turn **off** "Enforce JWT verification" (required for browser requests). (3) **Push latest code to GitHub** and hard refresh (Ctrl+F5) so the site uses the updated `cancel-booking.js`. (4) If CORS still fails, ensure your site domain is allowed in Supabase Dashboard → **Project Settings** → **API** → **CORS** (or use `*` for development).
 - **"No appointment found"** – Ask the customer to check number (with/without 91), date, and time slot.
 - **"Could not cancel"** – Check Supabase Edge Function logs for `cancel-booking`; ensure secrets are set and the function can delete from `bookings` and call `send-whatsapp`.

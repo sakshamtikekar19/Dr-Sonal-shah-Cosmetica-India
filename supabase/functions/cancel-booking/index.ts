@@ -9,7 +9,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-client-info, x-client-version, prefer",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -22,10 +22,15 @@ function normalizePhone(phone: string): string {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight - must return early and not require auth
+  if (req.method === "OPTIONS") {
+    return new Response(null, { 
+      status: 200, 
+      headers: CORS_HEADERS 
+    });
+  }
+  
   try {
-    if (req.method === "OPTIONS") {
-      return new Response(null, { status: 200, headers: CORS_HEADERS });
-    }
     if (req.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,

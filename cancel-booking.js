@@ -36,8 +36,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + config.supabaseAnonKey,
-        'apikey': config.supabaseAnonKey
+        'Authorization': 'Bearer ' + config.supabaseAnonKey
       },
       body: JSON.stringify({
         phone: phone,
