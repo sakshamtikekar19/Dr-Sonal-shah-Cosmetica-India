@@ -85,7 +85,7 @@
   transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.65s;
   touch-action: pan-y pinch-zoom; /* Allow vertical scrolling even when splash is visible */
   overflow: hidden;
-  pointer-events: auto; /* Allow touch events to pass through to body */
+  pointer-events: none; /* Don't block touch events - allow scrolling through */
 }
 .splash.splash--hidden {
   opacity: 0;
@@ -100,6 +100,7 @@
   justify-content: center;
   transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; /* Don't block touch events */
 }
 .splash.splash--hidden .splash-inner {
   opacity: 0;
@@ -2057,9 +2058,9 @@ main {
   
   /* Mobile scrolling fixes - ensure vertical scroll works */
   html {
-    height: 100% !important; /* Full height for proper scrolling */
+    height: auto !important; /* Auto height - critical for mobile scrolling */
     min-height: 100vh !important; /* Minimum viewport height */
-    overflow-y: auto !important; /* Natural scrolling */
+    overflow-y: scroll !important; /* Force scroll (not auto) for better mobile support */
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y pinch-zoom !important;
@@ -2078,7 +2079,7 @@ main {
   body {
     height: auto !important;
     min-height: 100vh !important;
-    overflow-y: auto !important; /* Natural scrolling */
+    overflow-y: scroll !important; /* Force scroll (not auto) for better mobile support */
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y pinch-zoom !important;
@@ -2088,6 +2089,7 @@ main {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
     width: 100% !important;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
   }
   
   body::-webkit-scrollbar {
@@ -2168,6 +2170,37 @@ main {
     overflow-x: hidden !important;
     overflow-y: visible !important;
     max-height: none !important;
+  }
+  
+  /* CRITICAL: Ensure main content area is scrollable */
+  main {
+    position: relative !important;
+    z-index: 1 !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
+  
+  /* Ensure no fixed/absolute elements block scroll */
+  .splash {
+    pointer-events: none !important; /* Never block touch */
+  }
+  
+  /* Force enable scrolling on mobile - CRITICAL */
+  html, body {
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: auto !important;
+    will-change: scroll-position; /* Optimize for scrolling */
+  }
+  
+  /* Prevent any element from blocking scroll */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Ensure header doesn't block */
+  .header {
+    position: sticky !important;
+    z-index: 100 !important;
   }
   
   .container {

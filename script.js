@@ -45,13 +45,24 @@
       }
     }, splashTimeout);
     
-    // On mobile, allow immediate scrolling by making splash non-interactive after short delay
+    // On mobile, allow immediate scrolling by making splash non-interactive immediately
     if (isMobile) {
-      setTimeout(function() {
+      // Make splash non-blocking immediately
+      splash.style.pointerEvents = 'none';
+      
+      // Also remove splash on first touch/scroll on mobile
+      var removeOnTouch = function() {
         if (splash && !splash.classList.contains('splash--hidden')) {
-          splash.style.pointerEvents = 'none'; // Allow touch to pass through
+          splash.classList.add('splash--hidden');
+          setTimeout(function() {
+            if (splash.parentNode) splash.remove();
+          }, 400);
         }
-      }, 200);
+        window.removeEventListener('touchstart', removeOnTouch);
+        window.removeEventListener('scroll', removeOnTouch);
+      };
+      window.addEventListener('touchstart', removeOnTouch, { once: true, passive: true });
+      window.addEventListener('scroll', removeOnTouch, { once: true, passive: true });
     }
   } else {
     // No splash - ensure scrolling is enabled
@@ -168,25 +179,39 @@
     }, { passive: true, capture: true });
   }
   
-  // Ensure body scrolling is never blocked on mobile
+  // Ensure body scrolling is never blocked on mobile - CRITICAL
   var ensureScrollEnabled = function() {
-    document.body.style.overflow = 'auto';
-    document.documentElement.style.overflow = 'auto';
+    document.body.style.overflow = 'scroll';
+    document.documentElement.style.overflow = 'scroll';
     document.body.style.height = 'auto';
     document.documentElement.style.height = 'auto';
+    document.body.style.position = 'relative';
+    document.documentElement.style.position = 'relative';
+    // Force enable touch scrolling
+    document.body.style.webkitOverflowScrolling = 'touch';
+    document.documentElement.style.webkitOverflowScrolling = 'touch';
   };
   
-  // Run immediately and on various events to ensure scroll works
+  // Run immediately and aggressively on mobile
   ensureScrollEnabled();
+  
+  // On mobile, be very aggressive about enabling scroll
+  var isMobileDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (isMobileDevice) {
+    // Run multiple times to ensure it sticks
+    setTimeout(ensureScrollEnabled, 0);
+    setTimeout(ensureScrollEnabled, 50);
+    setTimeout(ensureScrollEnabled, 100);
+    setTimeout(ensureScrollEnabled, 200);
+    setTimeout(ensureScrollEnabled, 500);
+    
+    // Also run on touch events
+    document.addEventListener('touchstart', ensureScrollEnabled, { passive: true, once: false });
+    document.addEventListener('touchmove', ensureScrollEnabled, { passive: true, once: false });
+  }
+  
   window.addEventListener('load', ensureScrollEnabled);
   window.addEventListener('DOMContentLoaded', ensureScrollEnabled);
-  
-  // On mobile, ensure scroll is enabled after a short delay (in case splash interferes)
-  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    setTimeout(ensureScrollEnabled, 100);
-    setTimeout(ensureScrollEnabled, 500);
-    setTimeout(ensureScrollEnabled, 1000);
-  }
 
   // Testimonial dots — scroll to card on click
   if (dots.length && track) {
