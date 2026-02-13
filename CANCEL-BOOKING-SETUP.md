@@ -13,13 +13,25 @@ They can also cancel by **WhatsApp** or **phone**; you can then delete the booki
 
 ---
 
-## Deploy the cancel-booking Edge Function
+## Setup cancel booking (PostgreSQL function - avoids CORS issues)
 
-### 1. Deploy
+### 1. Create the PostgreSQL function
+
+Run the SQL in `supabase-cancel-booking-function.sql` in **Supabase Dashboard** → **SQL Editor**:
+
+```sql
+-- Copy and paste the entire contents of supabase-cancel-booking-function.sql
+```
+
+This creates a PostgreSQL function `cancel_booking()` that can be called via RPC (no CORS issues).
+
+### 2. Optional: Deploy Edge Function for WhatsApp notifications
+
+The cancellation works without the Edge Function, but if you want automatic WhatsApp notifications on cancel, deploy:
 
 ```bash
 cd "c:\Users\Ananya\OneDrive\Desktop\Dr Shah"
-supabase functions deploy cancel-booking
+npx supabase functions deploy cancel-booking
 ```
 
 Or via **Supabase Dashboard** → **Edge Functions** → **Deploy** (paste code from `supabase/functions/cancel-booking/index.ts`).
@@ -50,6 +62,6 @@ The function allows all origins (`*`). If you restrict CORS later, allow your si
 
 ## Troubleshooting
 
-- **CORS error / "Failed to send request"** – The site now uses Supabase JS client's `functions.invoke()` which handles CORS automatically. (1) **Redeploy the Edge Function**: `npx supabase functions deploy cancel-booking`. (2) In **Edge Functions** → **cancel-booking** → **Settings**, turn **off** "Enforce JWT verification" (required). (3) **Push latest code to GitHub** and hard refresh (Ctrl+F5). If CORS still fails, ensure the Supabase JS library (`@supabase/supabase-js`) is loaded on the page (check `contact.html` includes the script tag).
+- **CORS error / "Failed to send request"** – The site now uses a **PostgreSQL function via RPC** instead of Edge Functions, which completely avoids CORS issues. (1) **Run the SQL** in `supabase-cancel-booking-function.sql` in Supabase Dashboard → SQL Editor. (2) **Push latest code to GitHub** and hard refresh (Ctrl+F5). RPC calls go through Supabase's REST API which handles CORS properly - no configuration needed!
 - **"No appointment found"** – Ask the customer to check number (with/without 91), date, and time slot.
 - **"Could not cancel"** – Check Supabase Edge Function logs for `cancel-booking`; ensure secrets are set and the function can delete from `bookings` and call `send-whatsapp`.

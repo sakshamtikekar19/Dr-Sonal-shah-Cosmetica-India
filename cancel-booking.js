@@ -1,6 +1,6 @@
 /**
  * Cancel booking – customer self-service.
- * Uses Supabase JS client functions.invoke() which handles CORS better than direct fetch.
+ * Uses PostgreSQL function via RPC (avoids Edge Function CORS issues).
  */
 (function () {
   'use strict';
@@ -13,7 +13,7 @@
   var submitBtn = document.getElementById('cancel-submit-btn');
   if (!form || !statusEl || !submitBtn) return;
 
-  // Create Supabase client - it handles CORS properly
+  // Create Supabase client - RPC calls handle CORS properly
   var supabase = window.supabase && window.supabase.createClient && window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
   if (!supabase) {
     console.error('Supabase client not available');
@@ -37,37 +37,55 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Cancelling…';
 
-    // Use Supabase client's functions.invoke() - it handles CORS and auth properly
-    supabase.functions.invoke('cancel-booking', {
-      body: {
-        phone: phone,
-        preferred_date: date,
-        preferred_time: time
-      }
+    // Call PostgreSQL function via RPC - no CORS issues!
+    supabase.rpc('cancel_booking', {
+      p_phone: phone,
+      p_preferred_date: date,
+      p_preferred_time: time
     })
       .then(function (res) {
         if (res.error) {
-          // Supabase client error
+          // Supabase RPC error
           var errorMsg = res.error.message || 'Could not cancel.';
-          if (errorMsg.indexOf('JWT') !== -1 || errorMsg.indexOf('unauthorized') !== -1 || errorMsg.indexOf('401') !== -1 || errorMsg.indexOf('403') !== -1) {
-            errorMsg = 'Access denied. In Supabase Dashboard go to Edge Functions → cancel-booking → Settings and turn OFF "Enforce JWT verification". Or cancel via WhatsApp/call +91 98704 39934.';
-          }
           statusEl.className = 'form-status form-status--error';
-          statusEl.textContent = errorMsg;
+          statusEl.textContent = errorMsg + ' Please cancel via WhatsApp or call +91 98704 39934.';
           submitBtn.disabled = false;
           submitBtn.textContent = 'Cancel my appointment';
           return;
         }
         
-        // Success
+        // RPC returns the JSON directly
         var data = res.data;
-        if (data && data.error) {
+        if (!data) {
           statusEl.className = 'form-status form-status--error';
-          statusEl.textContent = data.error;
+          statusEl.textContent = 'Could not cancel. Please cancel via WhatsApp or call +91 98704 39934.';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Cancel my appointment';
+          return;
+        }
+        
+        if (data.success === false || data.error) {
+          statusEl.className = 'form-status form-status--error';
+          statusEl.textContent = data.error || 'Could not cancel. Please cancel via WhatsApp or call +91 98704 39934.';
         } else {
           statusEl.className = 'form-status form-status--success';
-          statusEl.textContent = (data && data.message) ? data.message : 'Your appointment has been cancelled. You will receive a WhatsApp confirmation shortly.';
+          statusEl.textContent = data.message || 'Your appointment has been cancelled. You will receive a WhatsApp confirmation shortly.';
           form.reset();
+          
+          // Optionally trigger WhatsApp notification via Edge Function (fire-and-forget)
+          if (data.booking) {
+            supabase.functions.invoke('send-whatsapp', {
+              body: {
+                type: 'cancel',
+                phone: data.booking.phone,
+                name: data.booking.name,
+                preferred_date: data.booking.preferred_date,
+                preferred_time: data.booking.preferred_time
+              }
+            }).catch(function() {
+              // Ignore WhatsApp errors - cancellation already succeeded
+            });
+          }
         }
         submitBtn.disabled = false;
         submitBtn.textContent = 'Cancel my appointment';
