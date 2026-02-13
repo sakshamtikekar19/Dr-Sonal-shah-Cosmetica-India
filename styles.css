@@ -1544,6 +1544,12 @@ main {
 .cancel-alt-contact a.link-whatsapp {
   color: #25d366;
 }
+.cancel-alt-contact a.link-phone {
+  color: #25d366; /* Green like WhatsApp */
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .cancel-alt-contact a:hover {
   opacity: 0.9;
 }
