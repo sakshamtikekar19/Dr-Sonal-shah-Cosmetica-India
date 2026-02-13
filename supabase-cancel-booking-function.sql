@@ -1,6 +1,5 @@
 -- PostgreSQL function to cancel booking (called via RPC - avoids Edge Function CORS)
--- This function deletes the booking and returns success/error
--- WhatsApp notification is handled separately via Edge Function (admin can trigger)
+-- Run this in Supabase Dashboard → SQL Editor
 
 CREATE OR REPLACE FUNCTION cancel_booking(
   p_phone TEXT,
@@ -12,20 +11,18 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  v_booking_id INTEGER;
+  v_booking_id UUID;
   v_booking_name TEXT;
   v_booking_phone TEXT;
-  v_result JSON;
   v_count INTEGER;
-  v_sample_phone TEXT;
   v_input_normalized TEXT;
   v_input_with_91 TEXT;
   v_input_without_91 TEXT;
 BEGIN
-  -- Normalize input phone (remove non-digits)
+  -- Normalize input phone: remove all non-digits
   v_input_normalized := REGEXP_REPLACE(p_phone, '[^0-9]', '', 'g');
   
-  -- Create versions with and without country code
+  -- Create versions with and without country code 91
   IF LENGTH(v_input_normalized) = 10 THEN
     v_input_with_91 := '91' || v_input_normalized;
     v_input_without_91 := v_input_normalized;
@@ -37,25 +34,21 @@ BEGIN
     v_input_without_91 := v_input_normalized;
   END IF;
 
-  -- Find matching booking - compare normalized phone numbers (with/without 91)
+  -- Find matching booking by comparing normalized phone numbers
   SELECT id, name, phone INTO v_booking_id, v_booking_name, v_booking_phone
   FROM bookings
   WHERE preferred_date = p_preferred_date
     AND preferred_time = p_preferred_time
     AND (
-      -- Match normalized phone (with 91)
       REGEXP_REPLACE(phone, '[^0-9]', '', 'g') = v_input_with_91
-      -- Match normalized phone without country code
       OR REGEXP_REPLACE(phone, '[^0-9]', '', 'g') = v_input_without_91
-      -- Match original input exactly (in case stored with spaces/formatting)
       OR phone = p_phone
     )
   LIMIT 1;
 
-  -- Check if booking found
+  -- If no booking found, provide helpful error message
   IF v_booking_id IS NULL THEN
-    -- Try to find bookings for the same date/time to help debug
-    SELECT COUNT(*), MAX(phone) INTO v_count, v_sample_phone
+    SELECT COUNT(*) INTO v_count
     FROM bookings
     WHERE preferred_date = p_preferred_date
       AND preferred_time = p_preferred_time;
@@ -76,7 +69,7 @@ BEGIN
   -- Delete the booking
   DELETE FROM bookings WHERE id = v_booking_id;
 
-  -- Return success with booking details (for WhatsApp notification)
+  -- Return success
   RETURN json_build_object(
     'success', true,
     'message', 'Your appointment has been cancelled. You will receive a WhatsApp confirmation shortly.',
@@ -93,6 +86,3 @@ $$;
 
 -- Grant execute permission to anon role (so browser can call it)
 GRANT EXECUTE ON FUNCTION cancel_booking(TEXT, DATE, TEXT) TO anon;
-
--- Note: After calling this function, you can optionally call the send-whatsapp Edge Function
--- from admin panel or via a trigger, but for simplicity, we'll handle WhatsApp separately
