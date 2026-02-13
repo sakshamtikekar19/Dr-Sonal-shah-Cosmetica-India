@@ -49,11 +49,28 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    let body: { phone?: string; preferred_date?: string; preferred_time?: string; name?: string };
+    // Handle both JSON and form-encoded data
+    let body: { phone?: string; preferred_date?: string; preferred_time?: string; name?: string } = {};
+    const contentType = req.headers.get("Content-Type") || "";
+    
     try {
-      body = await req.json();
+      if (contentType.indexOf("application/json") !== -1) {
+        body = await req.json();
+      } else if (contentType.indexOf("application/x-www-form-urlencoded") !== -1) {
+        const formData = await req.formData();
+        body = {
+          phone: formData.get("phone")?.toString() || "",
+          preferred_date: formData.get("preferred_date")?.toString() || "",
+          preferred_time: formData.get("preferred_time")?.toString() || "",
+        };
+      } else {
+        return new Response(JSON.stringify({ error: "Content-Type must be application/json or application/x-www-form-urlencoded" }), {
+          status: 400,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        });
+      }
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
         status: 400,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });

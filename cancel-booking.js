@@ -32,17 +32,19 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Cancelling…';
 
-    fetch(functionUrl, {
+    // Use URL-encoded form data + query param apikey to avoid CORS preflight
+    // (no custom headers = no preflight)
+    var params = new URLSearchParams();
+    params.append('phone', phone);
+    params.append('preferred_date', date);
+    params.append('preferred_time', time);
+    
+    fetch(functionUrl + '?apikey=' + encodeURIComponent(config.supabaseAnonKey), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + config.supabaseAnonKey
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: JSON.stringify({
-        phone: phone,
-        preferred_date: date,
-        preferred_time: time
-      })
+      body: params.toString()
     })
       .then(function (res) {
         var ct = res.headers.get('Content-Type') || '';
