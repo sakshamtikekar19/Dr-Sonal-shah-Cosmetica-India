@@ -38,15 +38,20 @@
     submitBtn.textContent = 'Cancelling…';
 
     // Call PostgreSQL function via RPC - no CORS issues!
+    console.log('Calling cancel_booking RPC function...');
     supabase.rpc('cancel_booking', {
       p_phone: phone,
       p_preferred_date: date,
       p_preferred_time: time
     })
       .then(function (res) {
+        console.log('RPC response:', res);
         if (res.error) {
           // Supabase RPC error
           var errorMsg = res.error.message || 'Could not cancel.';
+          if (errorMsg.indexOf('does not exist') !== -1 || errorMsg.indexOf('function') !== -1) {
+            errorMsg = 'Cancel function not set up. Please run the SQL in supabase-cancel-booking-function.sql in Supabase Dashboard → SQL Editor. Or cancel via WhatsApp/call +91 98704 39934.';
+          }
           statusEl.className = 'form-status form-status--error';
           statusEl.textContent = errorMsg + ' Please cancel via WhatsApp or call +91 98704 39934.';
           submitBtn.disabled = false;
