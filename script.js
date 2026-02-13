@@ -4,9 +4,16 @@
   // Splash — show logo first, then fade out and remove
   var splash = document.getElementById('splash');
   if (splash) {
-    // Allow scrolling immediately (don't wait for load)
+    // Allow scrolling immediately (don't wait for load) - critical for mobile
     document.body.style.overflow = 'auto';
     document.documentElement.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    document.documentElement.style.height = 'auto';
+    
+    // Remove splash faster on mobile (detect touch device)
+    var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    var splashDelay = isMobile ? 300 : 500; // Faster on mobile
+    var splashTimeout = isMobile ? 1000 : 2000; // Remove faster on mobile
     
     window.addEventListener('load', function () {
       setTimeout(function () {
@@ -16,11 +23,13 @@
           // Ensure scrolling is enabled after splash is removed
           document.body.style.overflow = '';
           document.documentElement.style.overflow = '';
+          document.body.style.height = '';
+          document.documentElement.style.height = '';
         }, { once: true });
-      }, 500);
+      }, splashDelay);
     });
     
-    // Fallback: remove splash after 2 seconds even if load event doesn't fire
+    // Fallback: remove splash faster on mobile even if load event doesn't fire
     setTimeout(function() {
       if (splash && !splash.classList.contains('splash--hidden')) {
         splash.classList.add('splash--hidden');
@@ -29,14 +38,27 @@
             splash.remove();
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
+            document.body.style.height = '';
+            document.documentElement.style.height = '';
           }
-        }, 650);
+        }, 400);
       }
-    }, 2000);
+    }, splashTimeout);
+    
+    // On mobile, allow immediate scrolling by making splash non-interactive after short delay
+    if (isMobile) {
+      setTimeout(function() {
+        if (splash && !splash.classList.contains('splash--hidden')) {
+          splash.style.pointerEvents = 'none'; // Allow touch to pass through
+        }
+      }, 200);
+    }
   } else {
     // No splash - ensure scrolling is enabled
     document.body.style.overflow = 'auto';
     document.documentElement.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    document.documentElement.style.height = 'auto';
   }
 
   var menuToggle = document.querySelector('.menu-toggle');
@@ -136,14 +158,34 @@
       }
     }, true);
     
-    // Also handle touch events for mobile
+    // Also handle touch events for mobile (passive to not block scroll)
     document.addEventListener('touchstart', function(e) {
       if (menuCb.checked) {
         if (!nav.contains(e.target) && !e.target.closest('.menu-toggle')) {
           menuCb.checked = false;
         }
       }
-    }, true);
+    }, { passive: true, capture: true });
+  }
+  
+  // Ensure body scrolling is never blocked on mobile
+  var ensureScrollEnabled = function() {
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    document.documentElement.style.height = 'auto';
+  };
+  
+  // Run immediately and on various events to ensure scroll works
+  ensureScrollEnabled();
+  window.addEventListener('load', ensureScrollEnabled);
+  window.addEventListener('DOMContentLoaded', ensureScrollEnabled);
+  
+  // On mobile, ensure scroll is enabled after a short delay (in case splash interferes)
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    setTimeout(ensureScrollEnabled, 100);
+    setTimeout(ensureScrollEnabled, 500);
+    setTimeout(ensureScrollEnabled, 1000);
   }
 
   // Testimonial dots — scroll to card on click

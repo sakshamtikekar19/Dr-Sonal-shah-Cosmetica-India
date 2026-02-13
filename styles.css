@@ -83,13 +83,14 @@
   justify-content: center;
   background: var(--white);
   transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.65s;
-  touch-action: none;
+  touch-action: pan-y pinch-zoom; /* Allow vertical scrolling even when splash is visible */
   overflow: hidden;
+  pointer-events: auto; /* Allow touch events to pass through to body */
 }
 .splash.splash--hidden {
   opacity: 0;
-  pointer-events: none;
-  touch-action: auto;
+  pointer-events: none; /* Completely disable interaction when hidden */
+  touch-action: pan-y pinch-zoom; /* Allow scrolling */
   visibility: hidden;
   z-index: -1;
 }
@@ -168,7 +169,7 @@ html {
   overflow-x: hidden;
   overflow-y: auto; /* Allow natural scrolling */
   width: 100%;
-  height: 100%; /* Full height for proper scrolling */
+  height: auto; /* Auto height for proper scrolling on mobile */
   min-height: 100vh; /* Ensure minimum viewport height */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pinch-zoom;
