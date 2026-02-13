@@ -16,30 +16,61 @@ DECLARE
   v_booking_name TEXT;
   v_booking_phone TEXT;
   v_result JSON;
+  v_count INTEGER;
+  v_sample_phone TEXT;
+  v_input_normalized TEXT;
+  v_input_with_91 TEXT;
+  v_input_without_91 TEXT;
 BEGIN
-  -- Normalize phone (remove non-digits, add 91 if needed)
-  p_phone := REGEXP_REPLACE(p_phone, '[^0-9]', '', 'g');
-  IF LENGTH(p_phone) = 10 THEN
-    p_phone := '91' || p_phone;
+  -- Normalize input phone (remove non-digits)
+  v_input_normalized := REGEXP_REPLACE(p_phone, '[^0-9]', '', 'g');
+  
+  -- Create versions with and without country code
+  IF LENGTH(v_input_normalized) = 10 THEN
+    v_input_with_91 := '91' || v_input_normalized;
+    v_input_without_91 := v_input_normalized;
+  ELSIF LENGTH(v_input_normalized) >= 11 AND SUBSTRING(v_input_normalized FROM 1 FOR 2) = '91' THEN
+    v_input_with_91 := v_input_normalized;
+    v_input_without_91 := SUBSTRING(v_input_normalized FROM 3);
+  ELSE
+    v_input_with_91 := v_input_normalized;
+    v_input_without_91 := v_input_normalized;
   END IF;
 
-  -- Find matching booking
+  -- Find matching booking - compare normalized phone numbers (with/without 91)
   SELECT id, name, phone INTO v_booking_id, v_booking_name, v_booking_phone
   FROM bookings
   WHERE preferred_date = p_preferred_date
     AND preferred_time = p_preferred_time
     AND (
-      REGEXP_REPLACE(phone, '[^0-9]', '', 'g') = p_phone
+      -- Match normalized phone (with 91)
+      REGEXP_REPLACE(phone, '[^0-9]', '', 'g') = v_input_with_91
+      -- Match normalized phone without country code
+      OR REGEXP_REPLACE(phone, '[^0-9]', '', 'g') = v_input_without_91
+      -- Match original input exactly (in case stored with spaces/formatting)
       OR phone = p_phone
     )
   LIMIT 1;
 
   -- Check if booking found
   IF v_booking_id IS NULL THEN
-    RETURN json_build_object(
-      'success', false,
-      'error', 'No appointment found with this phone number, date and time. Please check details or contact us on WhatsApp.'
-    );
+    -- Try to find bookings for the same date/time to help debug
+    SELECT COUNT(*), MAX(phone) INTO v_count, v_sample_phone
+    FROM bookings
+    WHERE preferred_date = p_preferred_date
+      AND preferred_time = p_preferred_time;
+    
+    IF v_count > 0 THEN
+      RETURN json_build_object(
+        'success', false,
+        'error', 'No appointment found with this phone number for the selected date and time. Found ' || v_count || ' booking(s) for this slot, but phone numbers do not match. Please check your phone number (try with/without spaces, with/without +91). Or cancel via WhatsApp/call +91 98704 39934.'
+      );
+    ELSE
+      RETURN json_build_object(
+        'success', false,
+        'error', 'No appointment found for the selected date and time. Please check the date and time slot, or cancel via WhatsApp/call +91 98704 39934.'
+      );
+    END IF;
   END IF;
 
   -- Delete the booking
