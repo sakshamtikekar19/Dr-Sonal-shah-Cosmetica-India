@@ -128,7 +128,7 @@
         // If blocked_dates table doesn't exist, proceed with booking
         submitBooking();
       });
-  });
+  }, true);
   
   function submitBooking() {
     var dateStr = dateInput.value;
@@ -227,7 +227,8 @@
             });
           }
         });
-        return fetch(form.action, {
+        var formspreeUrl = form.getAttribute('data-formspree-url') || form.action;
+        return fetch(formspreeUrl, {
           method: 'POST',
           body: formData,
           headers: { Accept: 'application/json' }
@@ -265,5 +266,5 @@
         submitBtn.disabled = false;
         submitBtn.textContent = 'Request Appointment';
       });
-  }, true);
+  }
 })();

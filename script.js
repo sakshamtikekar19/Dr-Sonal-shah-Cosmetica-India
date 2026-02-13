@@ -76,7 +76,8 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending…';
       var formData = new FormData(bookingForm);
-      fetch(bookingForm.action, {
+      var formspreeUrl = bookingForm.getAttribute('data-formspree-url') || bookingForm.action;
+      fetch(formspreeUrl, {
         method: 'POST',
         body: formData,
         headers: { Accept: 'application/json' }
