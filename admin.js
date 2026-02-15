@@ -28,6 +28,9 @@
   var modalClose = document.getElementById('modal-close');
   var editCancel = document.getElementById('edit-cancel');
 
+  var currentFilter = 'upcoming';
+  var allBookingsData = [];
+
   function showLogin() {
     loginScreen.style.display = 'block';
     adminScreen.style.display = 'none';
@@ -67,28 +70,67 @@
     }, 100);
   }
 
+  /** Normalize slot end: 01:00/02:00 = 1–2 PM, 06–09 = 6–9 PM (24h) for correct past check. */
+  function slotEndTo24h(timeStr) {
+    var m = (timeStr || '').trim().match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return '23:59';
+    var h = parseInt(m[1], 10);
+    if (h >= 1 && h <= 9) h += 12;
+    if (h === 24) h = 12;
+    return (h < 10 ? '0' : '') + h + ':' + m[2];
+  }
+
+  /** True if the appointment's slot end (date + end of preferred_time) is in the past (local time). */
+  function isPastBooking(row) {
+    var dateStr = (row.preferred_date || '').trim();
+    var slot = (row.preferred_time || '').trim();
+    var endPart = slot.indexOf('-') !== -1 ? slot.split('-')[1].trim() : '23:59';
+    var end24 = slotEndTo24h(endPart);
+    var endStr = dateStr + 'T' + end24;
+    var endMs = new Date(endStr).getTime();
+    return endMs <= Date.now();
+  }
+
+  function applyFilter() {
+    var filtered = currentFilter === 'upcoming' ? allBookingsData.filter(function (r) { return !isPastBooking(r); })
+      : currentFilter === 'past' ? allBookingsData.filter(isPastBooking)
+      : allBookingsData;
+    var label = currentFilter === 'upcoming' ? 'upcoming' : currentFilter === 'past' ? 'past' : 'total';
+    bookingsCount.textContent = filtered.length + ' ' + label + ' appointment(s)';
+    emptyState.style.display = filtered.length === 0 ? 'block' : 'none';
+    if (emptyState) {
+      var firstP = emptyState.querySelector('p');
+      if (firstP) {
+        firstP.textContent = currentFilter === 'upcoming' ? 'No upcoming appointments.' : currentFilter === 'past' ? 'No past appointments.' : 'No appointments yet.';
+      }
+    }
+    bookingsTbody.closest('.bookings-table-wrap').style.display = filtered.length === 0 ? 'none' : 'block';
+    if (filtered.length === 0) {
+      bookingsTbody.innerHTML = '';
+      return;
+    }
+    bookingsTbody.innerHTML = filtered.map(function (row) {
+      return '<tr data-id="' + row.id + '">' +
+        '<td>' + escapeHtml(row.preferred_date || '') + '</td>' +
+        '<td>' + escapeHtml(row.preferred_time || '') + '</td>' +
+        '<td>' + escapeHtml(row.name || '') + '</td>' +
+        '<td>' + escapeHtml(row.phone || '') + '</td>' +
+        '<td>' + escapeHtml(row.email || '') + '</td>' +
+        '<td>' + escapeHtml(row.service || '') + '</td>' +
+        '<td>' + escapeHtml(row.follow_up_date || '') + '</td>' +
+        '<td>' + escapeHtml((row.message || '').slice(0, 40)) + (row.message && row.message.length > 40 ? '…' : '') + '</td>' +
+        '<td><button type="button" class="btn btn-primary btn-sm edit-btn">Edit</button> <button type="button" class="btn btn-secondary btn-sm delete-btn">Delete</button></td>' +
+        '</tr>';
+    }).join('');
+    bindRowActions(filtered);
+  }
+
   function loadBookings() {
     supabase.from('bookings').select('*').order('preferred_date', { ascending: false }).order('preferred_time', { ascending: true })
       .then(function (result) {
-        var data = result.data || [];
         if (result.error) throw result.error;
-        bookingsCount.textContent = data.length + ' appointment(s)';
-        emptyState.style.display = data.length === 0 ? 'block' : 'none';
-        bookingsTbody.closest('.bookings-table-wrap').style.display = data.length === 0 ? 'none' : 'block';
-        bookingsTbody.innerHTML = data.map(function (row) {
-          return '<tr data-id="' + row.id + '">' +
-            '<td>' + escapeHtml(row.preferred_date || '') + '</td>' +
-            '<td>' + escapeHtml(row.preferred_time || '') + '</td>' +
-            '<td>' + escapeHtml(row.name || '') + '</td>' +
-            '<td>' + escapeHtml(row.phone || '') + '</td>' +
-            '<td>' + escapeHtml(row.email || '') + '</td>' +
-            '<td>' + escapeHtml(row.service || '') + '</td>' +
-            '<td>' + escapeHtml(row.follow_up_date || '') + '</td>' +
-            '<td>' + escapeHtml((row.message || '').slice(0, 40)) + (row.message && row.message.length > 40 ? '…' : '') + '</td>' +
-            '<td><button type="button" class="btn btn-primary btn-sm edit-btn">Edit</button> <button type="button" class="btn btn-secondary btn-sm delete-btn">Delete</button></td>' +
-            '</tr>';
-        }).join('');
-        bindRowActions(data);
+        allBookingsData = result.data || [];
+        applyFilter();
       })
       .catch(function (err) {
         bookingsCount.textContent = 'Error loading appointments';
@@ -97,6 +139,17 @@
         if (wrap) wrap.style.display = 'block';
         bookingsTbody.innerHTML = '<tr><td colspan="9" style="color:#b91c1c; padding: 1.5rem;">' + escapeHtml(err.message || 'Failed to load') + '</td></tr>';
       });
+  }
+
+  function setActiveTab(filter) {
+    currentFilter = filter;
+    var tabs = document.querySelectorAll('.bookings-tab');
+    tabs.forEach(function (tab) {
+      var isActive = (tab.getAttribute('data-filter') || '') === filter;
+      tab.classList.toggle('active', isActive);
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+    applyFilter();
   }
 
   function escapeHtml(s) {
@@ -211,6 +264,13 @@
 
   if (modalClose) modalClose.addEventListener('click', closeEditModal);
   if (editCancel) editCancel.addEventListener('click', closeEditModal);
+
+  document.querySelectorAll('.bookings-tab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setActiveTab((btn.getAttribute('data-filter') || 'upcoming'));
+    });
+  });
+
   editModal.addEventListener('click', function (e) {
     if (e.target === editModal) closeEditModal();
   });

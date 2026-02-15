@@ -20,6 +20,10 @@
     .login-box input { width: 100%; padding: 0.65rem 0.85rem; font-size: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; }
     .login-error { color: #b91c1c; font-size: 0.9rem; margin-top: 0.5rem; }
     .bookings-toolbar { margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+    .bookings-tabs { display: flex; gap: 0.25rem; }
+    .bookings-tab { padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 500; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; background: var(--white); color: var(--text); cursor: pointer; }
+    .bookings-tab:hover { background: var(--bg); }
+    .bookings-tab.active { background: var(--teal); color: var(--white); border-color: var(--teal); }
     #block-dates-btn { display: inline-block !important; visibility: visible !important; opacity: 1 !important; }
     .bookings-table-wrap { overflow-x: auto; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
     .bookings-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
@@ -87,6 +91,11 @@
         </ul>
       </div>
       <div class="bookings-toolbar">
+        <div class="bookings-tabs" role="tablist" aria-label="Filter appointments">
+          <button type="button" class="bookings-tab active" role="tab" aria-selected="true" data-filter="upcoming">Upcoming</button>
+          <button type="button" class="bookings-tab" role="tab" aria-selected="false" data-filter="past">Past</button>
+          <button type="button" class="bookings-tab" role="tab" aria-selected="false" data-filter="all">All</button>
+        </div>
         <span id="bookings-count" class="text-muted"></span>
         <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal) !important; color: var(--white) !important; border: none !important; padding: 0.5rem 1rem !important; border-radius: 6px !important; cursor: pointer !important; font-weight: 600 !important; margin-left: auto;">🔒 Block Dates</button>
       </div>
