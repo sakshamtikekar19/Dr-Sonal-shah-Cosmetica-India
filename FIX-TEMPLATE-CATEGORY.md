@@ -42,18 +42,21 @@ Error 63049: "Meta chooses not to deliver this WhatsApp marketing message"
    - `{{3}}` = Appointment time
 5. **Submit for approval** (usually 24-48 hours)
 
-### Step 3: After Approval
+### Step 3: After Approval (you can do this one template at a time)
 
 1. **Get Content SIDs:**
    - Go to **Templates** → Click each template → Copy **Content SID** (starts with `HX`)
 
 2. **Update Supabase Secrets:**
    - Go to **Supabase Dashboard** → **Project Settings** → **Edge Functions** → **Secrets**
-   - Update:
-     - `TWILIO_WHATSAPP_TEMPLATE_CONFIRM` = new confirmation template Content SID
-     - `TWILIO_WHATSAPP_TEMPLATE_CANCEL` = new cancellation template Content SID
+   - **Cancel approved first?** Set only:
+     - `TWILIO_WHATSAPP_TEMPLATE_CANCEL` = cancel template Content SID  
+     Cancellation WhatsApp will work; confirmation will be skipped until the confirm template is approved.
+   - **Confirm approved later?** Add:
+     - `TWILIO_WHATSAPP_TEMPLATE_CONFIRM` = confirmation template Content SID  
+   No code or redeploy needed when only adding/updating these secrets.
 
-3. **Redeploy Function:**
+3. **Redeploy Function (only if you changed code):**
    ```bash
    supabase functions deploy send-whatsapp
    ```

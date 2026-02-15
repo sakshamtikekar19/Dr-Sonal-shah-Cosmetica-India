@@ -173,15 +173,15 @@ serve(async (req) => {
   const templateSid = type === "confirm" ? templateConfirmSid : templateCancelSid;
   
   if (!templateSid) {
-    // No template = error for production WhatsApp
-    console.error("Template SID missing for type:", type);
+    // Template not set (e.g. still pending approval) – skip send, don't fail
+    console.log("Template not set for type:", type, "- skipping WhatsApp send");
     return new Response(
-      JSON.stringify({ 
-        error: "WhatsApp template not configured", 
-        detail: `Set TWILIO_WHATSAPP_TEMPLATE_${type === "confirm" ? "CONFIRM" : "CANCEL"} in Supabase secrets`,
-        type: type
+      JSON.stringify({
+        ok: true,
+        skipped: true,
+        message: `WhatsApp ${type} template not configured yet. Add TWILIO_WHATSAPP_TEMPLATE_${type === "confirm" ? "CONFIRM" : "CANCEL"} when approved.`
       }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
   
