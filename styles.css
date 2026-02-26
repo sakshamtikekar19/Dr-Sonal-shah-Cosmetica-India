@@ -29,7 +29,16 @@
   box-sizing: border-box;
 }
 
-/* Prevent horizontal scroll globally, allow vertical scroll - REMOVED DUPLICATE */
+/* Prevent horizontal scroll globally */
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+body {
+  overflow-x: hidden;
+  width: 100%;
+  min-width: 0;
+}
 
 /* Animations — respect reduced motion */
 @media (prefers-reduced-motion: no-preference) {
@@ -848,16 +857,6 @@ main {
   align-items: center;
 }
 
-.hero-logo-bg {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  min-height: 280px;
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.06) 0%, rgba(20, 184, 166, 0.04) 100%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
 .hero-logo {
   position: relative;
   display: block;
@@ -1228,6 +1227,139 @@ main {
 
 .services-full--page {
   padding: 3rem 0 4rem;
+}
+
+/* Services accordion (4 categories, expand/collapse) */
+.services-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 720px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+.services-accordion-card {
+  background: var(--white);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.services-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  background: var(--bg-section);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: background var(--transition);
+  min-width: 0;
+}
+
+.services-accordion-header:hover {
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.services-accordion-header:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.services-accordion-title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.services-accordion-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--teal);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+  transition: transform var(--transition);
+}
+
+.services-accordion-card.is-open .services-accordion-icon {
+  transform: rotate(-135deg);
+}
+
+.services-accordion-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.services-accordion-panel-inner {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.services-accordion-sub {
+  margin-bottom: 1.5rem;
+}
+
+.services-accordion-sub:last-child {
+  margin-bottom: 0;
+}
+
+.services-accordion-subtitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--teal-dark);
+  margin: 0 0 0.75rem;
+}
+
+.services-accordion-treatments {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.services-accordion-treatment {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.services-accordion-treatment:last-child {
+  border-bottom: none;
+}
+
+.services-accordion-treatment strong {
+  display: block;
+  color: var(--text);
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.services-accordion-treatment p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .services-cta-wrap {
@@ -1778,6 +1910,62 @@ main {
   color: var(--teal-light);
 }
 
+.footer-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.footer-social a:hover {
+  color: var(--teal-light);
+  transform: scale(1.1);
+}
+
+.footer-social a:focus-visible {
+  outline: 2px solid var(--teal-light);
+  outline-offset: 2px;
+}
+
+.footer-social svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.footer-contact .footer-phone-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-contact .footer-wa-icon {
+  display: inline-flex;
+  vertical-align: middle;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.footer-contact .footer-wa-icon:hover {
+  color: #25d366;
+}
+
+.footer-contact .footer-wa-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
 .footer-bottom {
   padding: 1.25rem 1.5rem;
   padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
@@ -2276,6 +2464,22 @@ main {
     gap: 1.25rem;
   }
 
+  /* Services accordion – mobile: tighter padding, no horizontal scroll */
+  .services-accordion {
+    width: 100%;
+    max-width: 100%;
+  }
+  .services-accordion-header {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+  .services-accordion-panel-inner {
+    padding: 1rem;
+  }
+  .services-full--page {
+    padding: 2rem 0 3rem;
+  }
+
   .services-preview .section-title,
   .section-title-center {
     text-align: center;
@@ -2660,4 +2864,41 @@ main {
     height: 52px;
     max-width: 180px;
   }
+}
+
+/* Floating WhatsApp button — fixed bottom-right for quick enquiry */
+.floating-whatsapp {
+  position: fixed;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  right: calc(1.25rem + env(safe-area-inset-right, 0px));
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25d366;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  border: none;
+}
+
+.floating-whatsapp:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.5);
+  color: var(--white);
+}
+
+.floating-whatsapp:focus-visible {
+  outline: 2px solid #25d366;
+  outline-offset: 3px;
+}
+
+.floating-whatsapp svg {
+  width: 30px;
+  height: 30px;
+  fill: currentColor;
 }

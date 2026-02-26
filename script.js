@@ -1,68 +1,48 @@
 (function () {
   'use strict';
 
-  // Splash — show logo first, then fade out and remove
+  // Splash — show logo briefly, then fade out. Never block scroll.
   var splash = document.getElementById('splash');
   if (splash) {
-    // Allow scrolling immediately (don't wait for load) - critical for mobile
-    document.body.style.overflow = 'auto';
-    document.documentElement.style.overflow = 'auto';
-    document.body.style.height = 'auto';
-    document.documentElement.style.height = 'auto';
-    
-    // Remove splash faster on mobile (detect touch device)
+    // Allow scrolling from first paint (critical for mobile – avoids stuck scroll)
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.height = '';
+    document.documentElement.style.height = '';
+
     var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    var splashDelay = isMobile ? 300 : 500; // Faster on mobile
-    var splashTimeout = isMobile ? 1000 : 2000; // Remove faster on mobile
-    
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        splash.classList.add('splash--hidden');
-        splash.addEventListener('transitionend', function () {
-          splash.remove();
-          // Ensure scrolling is enabled after splash is removed
-          document.body.style.overflow = '';
-          document.documentElement.style.overflow = '';
-          document.body.style.height = '';
-          document.documentElement.style.height = '';
-        }, { once: true });
-      }, splashDelay);
-    });
-    
-    // Fallback: remove splash faster on mobile even if load event doesn't fire
-    setTimeout(function() {
-      if (splash && !splash.classList.contains('splash--hidden')) {
-        splash.classList.add('splash--hidden');
-        setTimeout(function() {
-          if (splash.parentNode) {
-            splash.remove();
-            document.body.style.overflow = '';
-            document.documentElement.style.overflow = '';
-            document.body.style.height = '';
-            document.documentElement.style.height = '';
-          }
-        }, 400);
-      }
-    }, splashTimeout);
-    
-    // On mobile, allow immediate scrolling by making splash non-interactive immediately
-    if (isMobile) {
-      // Make splash non-blocking immediately
-      splash.style.pointerEvents = 'none';
-      
-      // Also remove splash on first touch/scroll on mobile
-      var removeOnTouch = function() {
-        if (splash && !splash.classList.contains('splash--hidden')) {
-          splash.classList.add('splash--hidden');
-          setTimeout(function() {
-            if (splash.parentNode) splash.remove();
-          }, 400);
-        }
-        window.removeEventListener('touchstart', removeOnTouch);
-        window.removeEventListener('scroll', removeOnTouch);
+    var splashDelay = isMobile ? 200 : 400;
+    var splashRemoveAfter = isMobile ? 600 : 1500;
+
+    function hideAndRemoveSplash() {
+      if (!splash || splash.classList.contains('splash--hidden')) return;
+      splash.classList.add('splash--hidden');
+      var afterTransition = function () {
+        if (splash.parentNode) splash.remove();
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
       };
-      window.addEventListener('touchstart', removeOnTouch, { once: true, passive: true });
-      window.addEventListener('scroll', removeOnTouch, { once: true, passive: true });
+      splash.addEventListener('transitionend', afterTransition, { once: true });
+      setTimeout(afterTransition, 500);
+    }
+
+    window.addEventListener('load', function () {
+      setTimeout(hideAndRemoveSplash, splashDelay);
+    }, { once: true });
+
+    // Fallback: always remove splash so it never blocks scroll for long
+    setTimeout(hideAndRemoveSplash, splashRemoveAfter);
+
+    if (isMobile) {
+      splash.style.pointerEvents = 'none';
+      // On first scroll or touch, hide splash immediately so scroll feels responsive
+      var onFirstInteraction = function () {
+        hideAndRemoveSplash();
+        window.removeEventListener('touchstart', onFirstInteraction);
+        window.removeEventListener('scroll', onFirstInteraction);
+      };
+      window.addEventListener('touchstart', onFirstInteraction, { passive: true, once: true });
+      window.addEventListener('scroll', onFirstInteraction, { passive: true, once: true });
     }
   } else {
     // No splash - ensure scrolling is enabled
@@ -192,26 +172,16 @@
     document.documentElement.style.webkitOverflowScrolling = 'touch';
   };
   
-  // Run immediately and aggressively on mobile
+  // Run once so scroll is enabled; do NOT run on every touch (causes stutter/stuck scroll)
   ensureScrollEnabled();
-  
-  // On mobile, be very aggressive about enabling scroll
+  window.addEventListener('load', ensureScrollEnabled, { once: true });
+  window.addEventListener('DOMContentLoaded', ensureScrollEnabled, { once: true });
   var isMobileDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   if (isMobileDevice) {
-    // Run multiple times to ensure it sticks
     setTimeout(ensureScrollEnabled, 0);
-    setTimeout(ensureScrollEnabled, 50);
-    setTimeout(ensureScrollEnabled, 100);
-    setTimeout(ensureScrollEnabled, 200);
-    setTimeout(ensureScrollEnabled, 500);
-    
-    // Also run on touch events
-    document.addEventListener('touchstart', ensureScrollEnabled, { passive: true, once: false });
-    document.addEventListener('touchmove', ensureScrollEnabled, { passive: true, once: false });
+    setTimeout(ensureScrollEnabled, 300);
+    setTimeout(ensureScrollEnabled, 800);
   }
-  
-  window.addEventListener('load', ensureScrollEnabled);
-  window.addEventListener('DOMContentLoaded', ensureScrollEnabled);
 
   // Testimonial dots — scroll to card on click
   if (dots.length && track) {
