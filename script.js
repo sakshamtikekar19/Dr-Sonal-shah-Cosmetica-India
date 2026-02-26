@@ -215,32 +215,6 @@
     track.addEventListener('touchstart', function() { clearInterval(autoScroll); }, { passive: true });
   }
 
-  // Scroll reveal — add .animate-in when elements enter viewport
-  var revealEls = document.querySelectorAll('.reveal, .hero-content, .hero-image-wrap');
-  if (revealEls.length && 'IntersectionObserver' in window) {
-    var revealObs = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
-          // Parallax for hero bg
-          if (entry.target.classList.contains('hero-bg-shape')) {
-            window.addEventListener('scroll', function() {
-              var scrolled = window.scrollY;
-              entry.target.style.transform = 'translateY(' + (scrolled * 0.2) + 'px)';
-            }, { passive: true });
-          }
-        }
-      });
-    }, { rootMargin: '0px 0px -40px 0px', threshold: 0.1 });
-    revealEls.forEach(function (el) { revealObs.observe(el); });
-    
-    // Parallax hero shape
-    var heroShape = document.querySelector('.hero-bg-shape');
-    if (heroShape) revealObs.observe(heroShape);
-  } else {
-    revealEls.forEach(function (el) { el.classList.add('animate-in'); });
-  }
-
   // Header shadow on scroll
   var header = document.getElementById('header');
   if (header) {

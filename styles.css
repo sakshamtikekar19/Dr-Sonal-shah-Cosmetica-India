@@ -133,45 +133,20 @@ body {
   }
 }
 
-/* Scroll reveal — add .animate-in via JS when in view */
-.reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity var(--duration) var(--ease-out), transform var(--duration) var(--ease-out);
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-}
-.reveal.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
-
-.reveal.scale-in {
-  transform: scale(0.95);
-  opacity: 0;
-}
-.reveal.scale-in.animate-in {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.reveal.slide-in-right {
-  transform: translateX(30px);
-  opacity: 0;
-}
+/* .reveal — no scroll animation; content visible by default */
+.reveal,
+.reveal.animate-in,
+.reveal.scale-in,
+.reveal.scale-in.animate-in,
+.reveal.slide-in-right,
 .reveal.slide-in-right.animate-in {
-  transform: translateX(0);
   opacity: 1;
+  transform: none;
 }
+.reveal-delay-1,
+.reveal-delay-2,
+.reveal-delay-3,
+.reveal-delay-4 { /* unused now */ }
 
 html {
   scroll-behavior: smooth;
