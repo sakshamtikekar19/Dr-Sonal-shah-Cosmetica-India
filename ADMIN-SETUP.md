@@ -25,6 +25,10 @@ The admin page lets the client (clinic owner) log in and **view, edit, and delet
 **If the admin can log in but the dashboard shows "Error loading appointments" or "Failed to load":**  
 Run **`supabase-admin-fix-bookings-load.sql`** in the SQL Editor. It adds policies so that signed-in users can read the `bookings` (and `blocked_dates`) table.
 
+### (Optional) Block time slots on specific dates
+
+To block a **time range** on a date (e.g. 3-hour treatment so those slots are unavailable on the booking page), run **`supabase-blocked-slots-table.sql`** in the SQL Editor once. Then use **⏱ Block time slots** in the admin toolbar: pick a date, “From” and “To” time slots, and optionally a reason. Those slots will show as “(Booked)” on the public booking form.
+
 ### (Optional) Add follow-up date column
 
 To set a **follow-up date** for each booking (e.g. when to call/email the client after their first session), run **`supabase-bookings-follow-up-date.sql`** in the SQL Editor once. Then the Edit modal will show a “Follow-up date” field and the table will show it.

@@ -578,6 +578,143 @@
     });
   }
 
+  // Block time slots (e.g. 3-hour treatment on a date)
+  var BLOCK_SLOTS_ORDER = [
+    '10:00-10:30', '10:30-11:00', '11:00-11:30', '11:30-12:00',
+    '12:00-12:30', '12:30-01:00', '01:00-01:30', '01:30-02:00',
+    '06:00-06:30', '06:30-07:00', '07:00-07:30', '07:30-08:00',
+    '08:00-08:30', '08:30-09:00'
+  ];
+  var blockSlotsBtn = document.getElementById('block-slots-btn');
+  var blockSlotsModal = document.getElementById('block-slots-modal');
+  var blockSlotsForm = document.getElementById('block-slots-form');
+  var blockSlotsModalClose = document.getElementById('block-slots-modal-close');
+  var blockSlotsCancel = document.getElementById('block-slots-cancel');
+  var blockSlotDate = document.getElementById('block-slot-date');
+  var blockSlotStart = document.getElementById('block-slot-start');
+  var blockSlotEnd = document.getElementById('block-slot-end');
+  var blockedSlotsList = document.getElementById('blocked-slots-list');
+
+  function openBlockSlotsModal() {
+    if (!blockSlotsModal) return;
+    var today = new Date().toISOString().split('T')[0];
+    if (blockSlotDate) blockSlotDate.min = today;
+    if (blockSlotsForm) blockSlotsForm.reset();
+    blockSlotsModal.classList.remove('hidden');
+    blockSlotsModal.setAttribute('aria-hidden', 'false');
+    loadBlockedSlots();
+  }
+
+  function closeBlockSlotsModal() {
+    if (!blockSlotsModal) return;
+    blockSlotsModal.classList.add('hidden');
+    blockSlotsModal.setAttribute('aria-hidden', 'true');
+    if (blockSlotsForm) blockSlotsForm.reset();
+  }
+
+  function slotIndex(slotValue) {
+    var i = BLOCK_SLOTS_ORDER.indexOf(slotValue);
+    return i >= 0 ? i : -1;
+  }
+
+  function loadBlockedSlots() {
+    if (!blockedSlotsList) return;
+    blockedSlotsList.innerHTML = '<p class="text-muted">Loading...</p>';
+    supabase.from('blocked_slots').select('*').order('blocked_date', { ascending: true }).order('start_slot', { ascending: true })
+      .then(function (result) {
+        var rows = result.data || [];
+        if (result.error) throw result.error;
+        if (rows.length === 0) {
+          blockedSlotsList.innerHTML = '<p class="text-muted">No time slots blocked.</p>';
+          return;
+        }
+        var html = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+        rows.forEach(function (r) {
+          var reason = r.reason ? ' — ' + escapeHtml(r.reason) : '';
+          html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: var(--bg); border-radius: 4px;">';
+          html += '<span><strong>' + escapeHtml(r.blocked_date) + '</strong> ' + escapeHtml(r.start_slot) + ' – ' + escapeHtml(r.end_slot) + reason + '</span>';
+          html += '<button type="button" class="btn btn-secondary btn-sm unblock-slot-btn" data-id="' + r.id + '">Remove</button>';
+          html += '</div>';
+        });
+        html += '</div>';
+        blockedSlotsList.innerHTML = html;
+        blockedSlotsList.querySelectorAll('.unblock-slot-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = this.getAttribute('data-id');
+            if (confirm('Remove this blocked time range? Those slots will be available again.')) {
+              supabase.from('blocked_slots').delete().eq('id', id)
+                .then(function (res) {
+                  if (res.error) throw res.error;
+                  loadBlockedSlots();
+                })
+                .catch(function (err) {
+                  alert('Could not remove: ' + (err.message || 'Unknown error'));
+                });
+            }
+          });
+        });
+      })
+      .catch(function (err) {
+        blockedSlotsList.innerHTML = '<p style="color: #b91c1c;">Error loading blocked slots. If the table does not exist, run supabase-blocked-slots-table.sql in Supabase.</p>';
+      });
+  }
+
+  if (blockSlotStart) {
+    blockSlotStart.addEventListener('change', function () {
+      var startVal = blockSlotStart.value;
+      var endSelect = blockSlotEnd;
+      if (!endSelect || !startVal) return;
+      var startIdx = slotIndex(startVal);
+      var opts = endSelect.querySelectorAll('option[value]');
+      opts.forEach(function (opt) {
+        var v = opt.value;
+        opt.disabled = slotIndex(v) < startIdx;
+        if (opt.value === endSelect.value && slotIndex(v) < startIdx) endSelect.value = startVal;
+      });
+    });
+  }
+
+  if (blockSlotsBtn) blockSlotsBtn.addEventListener('click', openBlockSlotsModal);
+  if (blockSlotsModalClose) blockSlotsModalClose.addEventListener('click', closeBlockSlotsModal);
+  if (blockSlotsCancel) blockSlotsCancel.addEventListener('click', closeBlockSlotsModal);
+  if (blockSlotsModal) blockSlotsModal.addEventListener('click', function (e) { if (e.target === blockSlotsModal) closeBlockSlotsModal(); });
+
+  if (blockSlotsForm) {
+    blockSlotsForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var dateVal = blockSlotDate && blockSlotDate.value;
+      var startVal = blockSlotStart && blockSlotStart.value;
+      var endVal = blockSlotEnd && blockSlotEnd.value;
+      if (!dateVal || !startVal || !endVal) {
+        alert('Please select date, start and end time.');
+        return;
+      }
+      var startIdx = slotIndex(startVal);
+      var endIdx = slotIndex(endVal);
+      if (endIdx < startIdx) {
+        alert('End time must be the same or after start time.');
+        return;
+      }
+      var reason = document.getElementById('block-slot-reason');
+      var payload = {
+        blocked_date: dateVal,
+        start_slot: startVal,
+        end_slot: endVal,
+        reason: (reason && reason.value.trim()) || null
+      };
+      supabase.from('blocked_slots').insert(payload)
+        .then(function (result) {
+          if (result.error) throw result.error;
+          alert('Time slots blocked. They will not appear as available on the booking page.');
+          blockSlotsForm.reset();
+          loadBlockedSlots();
+        })
+        .catch(function (err) {
+          alert('Could not block slots: ' + (err.message || 'Unknown error'));
+        });
+    });
+  }
+
   supabase.auth.getSession().then(function (result) {
     if (result.data && result.data.session) showAdmin();
     else showLogin();

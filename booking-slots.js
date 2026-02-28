@@ -46,6 +46,19 @@
     if (currentVal && bookedValues.indexOf(currentVal) !== -1) timeSelect.value = '';
   }
 
+  /** Expand blocked_slots rows (start_slot..end_slot inclusive) to array of slot strings. */
+  function expandBlockedSlots(rows) {
+    var out = [];
+    (rows || []).forEach(function (r) {
+      var start = TIME_SLOTS.indexOf(r.start_slot);
+      var end = TIME_SLOTS.indexOf(r.end_slot);
+      if (start === -1 || end === -1) return;
+      if (start > end) { var t = start; start = end; end = t; }
+      for (var i = start; i <= end; i++) out.push(TIME_SLOTS[i]);
+    });
+    return out;
+  }
+
   function updateTimeSlotAvailability() {
     var dateStr = dateInput.value;
     if (!dateStr) {
@@ -53,13 +66,12 @@
       return;
     }
     
-    // Check if date is blocked
+    // Check if full date is blocked
     supabase.from('blocked_dates').select('blocked_date').eq('blocked_date', dateStr)
       .then(function (blockResult) {
         var isBlocked = blockResult.data && blockResult.data.length > 0;
         
         if (isBlocked) {
-          // Date is blocked - disable time slots and show message
           setSlotOptions([]);
           timeSelect.disabled = true;
           if (formStatus) {
@@ -69,24 +81,29 @@
           return;
         }
         
-        // Date is not blocked - check booked slots
         timeSelect.disabled = false;
         if (formStatus && formStatus.textContent.indexOf('blocked') !== -1) {
           formStatus.textContent = '';
           formStatus.className = 'form-status';
         }
         
-        supabase.from('bookings').select('preferred_time').eq('preferred_date', dateStr)
-          .then(function (result) {
-            var booked = (result.data || []).map(function (r) { return r.preferred_time; });
-            setSlotOptions(booked);
-          })
-          .catch(function () {
-            setSlotOptions([]);
+        // Fetch both bookings and blocked_slots for this date
+        Promise.all([
+          supabase.from('bookings').select('preferred_time').eq('preferred_date', dateStr),
+          supabase.from('blocked_slots').select('start_slot, end_slot').eq('blocked_date', dateStr)
+        ]).then(function (results) {
+          var booked = (results[0].data || []).map(function (r) { return r.preferred_time; });
+          var blockedRows = results[1].data || [];
+          var blockedList = expandBlockedSlots(blockedRows);
+          blockedList.forEach(function (s) {
+            if (booked.indexOf(s) === -1) booked.push(s);
           });
+          setSlotOptions(booked);
+        }).catch(function () {
+          setSlotOptions([]);
+        });
       })
       .catch(function () {
-        // If blocked_dates table doesn't exist, just check bookings
         supabase.from('bookings').select('preferred_time').eq('preferred_date', dateStr)
           .then(function (result) {
             var booked = (result.data || []).map(function (r) { return r.preferred_time; });
@@ -108,26 +125,32 @@
     var timeVal = timeSelect.value;
     if (!dateStr || !timeVal) return;
     
-    // Double-check if date is blocked before submission
-    supabase.from('blocked_dates').select('blocked_date').eq('blocked_date', dateStr)
-      .then(function (blockResult) {
-        var isBlocked = blockResult.data && blockResult.data.length > 0;
-        
-        if (isBlocked) {
-          if (formStatus) {
-            formStatus.className = 'form-status form-status--error';
-            formStatus.textContent = 'This date is blocked. Please select another date.';
-          }
-          return;
+    // Double-check date not fully blocked and slot not in blocked_slots
+    Promise.all([
+      supabase.from('blocked_dates').select('blocked_date').eq('blocked_date', dateStr),
+      supabase.from('blocked_slots').select('start_slot, end_slot').eq('blocked_date', dateStr)
+    ]).then(function (results) {
+      var dateBlocked = results[0].data && results[0].data.length > 0;
+      if (dateBlocked) {
+        if (formStatus) {
+          formStatus.className = 'form-status form-status--error';
+          formStatus.textContent = 'This date is blocked. Please select another date.';
         }
-        
-        // Proceed with booking submission
-        submitBooking();
-      })
-      .catch(function () {
-        // If blocked_dates table doesn't exist, proceed with booking
-        submitBooking();
-      });
+        return;
+      }
+      var blockedList = expandBlockedSlots(results[1].data || []);
+      if (blockedList.indexOf(timeVal) !== -1) {
+        if (formStatus) {
+          formStatus.className = 'form-status form-status--error';
+          formStatus.textContent = 'This time slot is blocked. Please choose another slot.';
+        }
+        updateTimeSlotAvailability();
+        return;
+      }
+      submitBooking();
+    }).catch(function () {
+      submitBooking();
+    });
   }, true);
   
   function submitBooking() {

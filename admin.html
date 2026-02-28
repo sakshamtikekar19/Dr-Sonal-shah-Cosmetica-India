@@ -98,6 +98,7 @@
           <li><strong>Edit</strong> any booking — click “Edit”, change details, then “Save changes”.</li>
           <li><strong>Delete</strong> a booking to free that slot so someone else can book it.</li>
           <li><strong>Block dates</strong> — freeze booking slots for specific days (e.g., clinic closed, doctor unavailable).</li>
+          <li><strong>Block time slots</strong> — block a time range on a date (e.g. 3-hour treatment); those slots are unavailable on the booking page.</li>
         </ul>
       </div>
       <div class="bookings-toolbar">
@@ -109,6 +110,7 @@
         <span id="bookings-count" class="text-muted"></span>
         <button type="button" class="btn btn-primary" id="add-booking-btn" style="margin-left: auto;">➕ Add booking</button>
         <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal) !important; color: var(--white) !important; border: none !important; padding: 0.5rem 1rem !important; border-radius: 6px !important; cursor: pointer !important; font-weight: 600 !important;">🔒 Block Dates</button>
+        <button type="button" class="btn btn-secondary" id="block-slots-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal) !important; color: var(--white) !important; border: none !important; padding: 0.5rem 1rem !important; border-radius: 6px !important; cursor: pointer !important; font-weight: 600 !important;">⏱ Block time slots</button>
       </div>
       <div class="bookings-table-wrap">
         <table class="bookings-table" id="bookings-table">
@@ -264,6 +266,79 @@
           <button type="submit" class="btn btn-primary">Save changes</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Block time slots Modal -->
+  <div class="modal-overlay hidden" id="block-slots-modal" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Block time slots</h3>
+        <button type="button" class="modal-close" id="block-slots-modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="margin-bottom: 1rem;">Block a time range on a date (e.g. 3-hour treatment). Those slots will be unavailable on the booking page.</p>
+        <form id="block-slots-form">
+          <div class="form-row">
+            <label for="block-slot-date">Date</label>
+            <input type="date" id="block-slot-date" required min="">
+          </div>
+          <div class="form-row">
+            <label for="block-slot-start">From time slot</label>
+            <select id="block-slot-start" required>
+              <option value="">— Select start —</option>
+              <option value="10:00-10:30">10:00 – 10:30 AM</option>
+              <option value="10:30-11:00">10:30 – 11:00 AM</option>
+              <option value="11:00-11:30">11:00 – 11:30 AM</option>
+              <option value="11:30-12:00">11:30 – 12:00 PM</option>
+              <option value="12:00-12:30">12:00 – 12:30 PM</option>
+              <option value="12:30-01:00">12:30 – 1:00 PM</option>
+              <option value="01:00-01:30">1:00 – 1:30 PM</option>
+              <option value="01:30-02:00">1:30 – 2:00 PM</option>
+              <option value="06:00-06:30">6:00 – 6:30 PM</option>
+              <option value="06:30-07:00">6:30 – 7:00 PM</option>
+              <option value="07:00-07:30">7:00 – 7:30 PM</option>
+              <option value="07:30-08:00">7:30 – 8:00 PM</option>
+              <option value="08:00-08:30">8:00 – 8:30 PM</option>
+              <option value="08:30-09:00">8:30 – 9:00 PM</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="block-slot-end">To time slot</label>
+            <select id="block-slot-end" required>
+              <option value="">— Select end —</option>
+              <option value="10:00-10:30">10:00 – 10:30 AM</option>
+              <option value="10:30-11:00">10:30 – 11:00 AM</option>
+              <option value="11:00-11:30">11:00 – 11:30 AM</option>
+              <option value="11:30-12:00">11:30 – 12:00 PM</option>
+              <option value="12:00-12:30">12:00 – 12:30 PM</option>
+              <option value="12:30-01:00">12:30 – 1:00 PM</option>
+              <option value="01:00-01:30">1:00 – 1:30 PM</option>
+              <option value="01:30-02:00">1:30 – 2:00 PM</option>
+              <option value="06:00-06:30">6:00 – 6:30 PM</option>
+              <option value="06:30-07:00">6:30 – 7:00 PM</option>
+              <option value="07:00-07:30">7:00 – 7:30 PM</option>
+              <option value="07:30-08:00">7:30 – 8:00 PM</option>
+              <option value="08:00-08:30">8:00 – 8:30 PM</option>
+              <option value="08:30-09:00">8:30 – 9:00 PM</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="block-slot-reason">Reason (optional)</label>
+            <input type="text" id="block-slot-reason" placeholder="e.g. Long treatment, Surgery">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="block-slots-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">Block slots</button>
+          </div>
+        </form>
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,0.1);">
+          <h3 style="font-size: 1rem; margin-bottom: 1rem;">Blocked time slots</h3>
+          <div id="blocked-slots-list" style="max-height: 300px; overflow-y: auto;">
+            <p class="text-muted">Loading...</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
