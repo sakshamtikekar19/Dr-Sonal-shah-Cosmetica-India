@@ -265,6 +265,83 @@
   if (modalClose) modalClose.addEventListener('click', closeEditModal);
   if (editCancel) editCancel.addEventListener('click', closeEditModal);
 
+  // Add booking
+  var addBookingBtn = document.getElementById('add-booking-btn');
+  var addBookingModal = document.getElementById('add-booking-modal');
+  var addBookingForm = document.getElementById('add-booking-form');
+  var addBookingStatus = document.getElementById('add-booking-status');
+  var addDateInput = document.getElementById('add-date');
+  var addBookingModalClose = document.getElementById('add-booking-modal-close');
+  var addBookingCancel = document.getElementById('add-booking-cancel');
+
+  function openAddBookingModal() {
+    if (!addBookingModal) return;
+    var today = new Date().toISOString().split('T')[0];
+    if (addDateInput) addDateInput.min = today;
+    if (addBookingStatus) addBookingStatus.textContent = '';
+    if (addBookingForm) addBookingForm.reset();
+    addBookingModal.classList.remove('hidden');
+    addBookingModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeAddBookingModal() {
+    if (!addBookingModal) return;
+    addBookingModal.classList.add('hidden');
+    addBookingModal.setAttribute('aria-hidden', 'true');
+    if (addBookingForm) addBookingForm.reset();
+    if (addBookingStatus) addBookingStatus.textContent = '';
+  }
+
+  if (addBookingBtn) addBookingBtn.addEventListener('click', openAddBookingModal);
+  if (addBookingModalClose) addBookingModalClose.addEventListener('click', closeAddBookingModal);
+  if (addBookingCancel) addBookingCancel.addEventListener('click', closeAddBookingModal);
+  if (addBookingModal) addBookingModal.addEventListener('click', function (e) { if (e.target === addBookingModal) closeAddBookingModal(); });
+
+  if (addBookingForm) {
+    addBookingForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (addBookingStatus) addBookingStatus.textContent = 'Saving…';
+      var payload = {
+        preferred_date: document.getElementById('add-date').value,
+        preferred_time: document.getElementById('add-time').value,
+        name: document.getElementById('add-name').value.trim(),
+        phone: document.getElementById('add-phone').value.trim(),
+        email: document.getElementById('add-email').value.trim() || null,
+        service: document.getElementById('add-service').value.trim() || null,
+        follow_up_date: document.getElementById('add-follow-up-date').value || null,
+        message: document.getElementById('add-message').value.trim() || null
+      };
+      supabase.from('bookings').insert(payload)
+        .then(function (result) {
+          if (result.error) throw result.error;
+          closeAddBookingModal();
+          loadBookings();
+          if (addBookingStatus) addBookingStatus.textContent = '';
+          alert('Booking added. The slot is now reserved.');
+          var config = window.BOOKING_CONFIG;
+          if (config && config.supabaseAnonKey && payload.phone) {
+            supabase.functions.invoke('send-whatsapp', {
+              headers: { 'Authorization': 'Bearer ' + config.supabaseAnonKey },
+              body: {
+                type: 'confirm',
+                phone: payload.phone,
+                name: payload.name,
+                preferred_date: payload.preferred_date,
+                preferred_time: payload.preferred_time
+              }
+            }).catch(function () {});
+          }
+        })
+        .catch(function (err) {
+          var msg = err && err.message ? err.message : 'Failed to add booking';
+          if (msg.indexOf('duplicate') !== -1 || msg.indexOf('unique') !== -1) {
+            msg = 'This date and time slot is already booked. Please choose another slot.';
+          }
+          if (addBookingStatus) addBookingStatus.textContent = msg;
+        });
+    });
+  }
+
   document.querySelectorAll('.bookings-tab').forEach(function (btn) {
     btn.addEventListener('click', function () {
       setActiveTab((btn.getAttribute('data-filter') || 'upcoming'));

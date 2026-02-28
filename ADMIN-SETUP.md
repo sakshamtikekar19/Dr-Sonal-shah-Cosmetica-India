@@ -22,6 +22,9 @@ The admin page lets the client (clinic owner) log in and **view, edit, and delet
 2. Open **`supabase-admin-policies.sql`** from this project, copy its contents, and run it in the SQL Editor.  
    This adds policies so that **only signed-in users** can update and delete rows in `bookings`. The public can still book (insert) and see booked slots (select).
 
+**If the admin can log in but the dashboard shows "Error loading appointments" or "Failed to load":**  
+Run **`supabase-admin-fix-bookings-load.sql`** in the SQL Editor. It adds policies so that signed-in users can read the `bookings` (and `blocked_dates`) table.
+
 ### (Optional) Add follow-up date column
 
 To set a **follow-up date** for each booking (e.g. when to call/email the client after their first session), run **`supabase-bookings-follow-up-date.sql`** in the SQL Editor once. Then the Edit modal will show a “Follow-up date” field and the table will show it.

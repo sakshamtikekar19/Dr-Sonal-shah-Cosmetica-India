@@ -93,6 +93,7 @@
       <div class="admin-intro">
         <strong>What you can do here</strong>
         <ul>
+          <li><strong>Add booking</strong> — create an appointment (e.g. from a phone call) and reserve the slot.</li>
           <li><strong>View</strong> all appointment requests (date, time, name, WhatsApp, email, treatment, follow-up date, message).</li>
           <li><strong>Edit</strong> any booking — click “Edit”, change details, then “Save changes”.</li>
           <li><strong>Delete</strong> a booking to free that slot so someone else can book it.</li>
@@ -106,7 +107,8 @@
           <button type="button" class="bookings-tab" role="tab" aria-selected="false" data-filter="all">All</button>
         </div>
         <span id="bookings-count" class="text-muted"></span>
-        <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal) !important; color: var(--white) !important; border: none !important; padding: 0.5rem 1rem !important; border-radius: 6px !important; cursor: pointer !important; font-weight: 600 !important; margin-left: auto;">🔒 Block Dates</button>
+        <button type="button" class="btn btn-primary" id="add-booking-btn" style="margin-left: auto;">➕ Add booking</button>
+        <button type="button" class="btn btn-secondary" id="block-dates-btn" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background: var(--teal) !important; color: var(--white) !important; border: none !important; padding: 0.5rem 1rem !important; border-radius: 6px !important; cursor: pointer !important; font-weight: 600 !important;">🔒 Block Dates</button>
       </div>
       <div class="bookings-table-wrap">
         <table class="bookings-table" id="bookings-table">
@@ -131,6 +133,72 @@
         <p style="margin:0 0 0.5rem; font-size: 1.1rem;">No appointments yet.</p>
         <p style="margin:0; font-size: 0.9rem;">New bookings from your website will appear here.</p>
       </div>
+    </div>
+  </div>
+
+  <div id="add-booking-modal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add booking</h3>
+        <button type="button" class="modal-close" id="add-booking-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="add-booking-form">
+        <div class="modal-body">
+          <div class="form-row">
+            <label for="add-date">Date <span aria-hidden="true">*</span></label>
+            <input type="date" id="add-date" required>
+          </div>
+          <div class="form-row">
+            <label for="add-time">Time slot <span aria-hidden="true">*</span></label>
+            <select id="add-time" required>
+              <option value="">— Select time —</option>
+              <option value="10:00-10:30">10:00 – 10:30 AM</option>
+              <option value="10:30-11:00">10:30 – 11:00 AM</option>
+              <option value="11:00-11:30">11:00 – 11:30 AM</option>
+              <option value="11:30-12:00">11:30 – 12:00 PM</option>
+              <option value="12:00-12:30">12:00 – 12:30 PM</option>
+              <option value="12:30-01:00">12:30 – 1:00 PM</option>
+              <option value="01:00-01:30">1:00 – 1:30 PM</option>
+              <option value="01:30-02:00">1:30 – 2:00 PM</option>
+              <option value="06:00-06:30">6:00 – 6:30 PM</option>
+              <option value="06:30-07:00">6:30 – 7:00 PM</option>
+              <option value="07:00-07:30">7:00 – 7:30 PM</option>
+              <option value="07:30-08:00">7:30 – 8:00 PM</option>
+              <option value="08:00-08:30">8:00 – 8:30 PM</option>
+              <option value="08:30-09:00">8:30 – 9:00 PM</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="add-name">Name <span aria-hidden="true">*</span></label>
+            <input type="text" id="add-name" required placeholder="Client name">
+          </div>
+          <div class="form-row">
+            <label for="add-phone">WhatsApp number <span aria-hidden="true">*</span></label>
+            <input type="tel" id="add-phone" required placeholder="e.g. 98704 39934">
+          </div>
+          <div class="form-row">
+            <label for="add-email">Email</label>
+            <input type="email" id="add-email" placeholder="optional">
+          </div>
+          <div class="form-row">
+            <label for="add-service">Treatment / service</label>
+            <input type="text" id="add-service" placeholder="e.g. PRP, Acne treatment">
+          </div>
+          <div class="form-row">
+            <label for="add-follow-up-date">Follow-up date</label>
+            <input type="date" id="add-follow-up-date" title="Date to call/email client after first session">
+          </div>
+          <div class="form-row">
+            <label for="add-message">Message / notes</label>
+            <textarea id="add-message" rows="2" placeholder="Optional notes"></textarea>
+          </div>
+          <div id="add-booking-status" class="form-status" style="margin-bottom: 0.5rem;" aria-live="polite"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="add-booking-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add booking</button>
+        </div>
+      </form>
     </div>
   </div>
 
